@@ -2,7 +2,7 @@
 
     python run_phase1.py                 # everything
     python run_phase1.py setup manifest  # selected steps
-Steps: setup manifest reproduce split probe b1 b2 summary
+Steps: setup manifest reproduce retry split probe b1 b2 summary
 """
 import subprocess
 import sys
@@ -17,6 +17,7 @@ STEPS = {
     "setup": ["scripts/setup_tools.py"],
     "manifest": ["scripts/build_manifest.py"],
     "reproduce": ["scripts/reproduce.py"],
+    "retry": ["scripts/reproduce.py", "--retry", "victim_fails_alone"],
     "split": ["scripts/split.py"],
     "probe": ["scripts/probe_orders.py"],
     "b1": ["baselines/b1_single_call.py"],
@@ -25,7 +26,17 @@ STEPS = {
 }
 
 
+def keep_awake():
+    """Ask Windows not to idle-sleep while this process runs (released automatically on exit).
+    Closing the lid or a manual sleep still pauses the run; rerunning resumes it."""
+    if sys.platform == "win32":
+        import ctypes
+        ES_CONTINUOUS, ES_SYSTEM_REQUIRED = 0x80000000, 0x00000001
+        ctypes.windll.kernel32.SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED)
+
+
 def main():
+    keep_awake()
     steps = sys.argv[1:] or list(STEPS)
     log = env.WORK / "logs" / "phase1.log"
     log.parent.mkdir(parents=True, exist_ok=True)
