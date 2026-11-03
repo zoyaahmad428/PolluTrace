@@ -9,6 +9,7 @@ provider (OpenAI, Groq, a local Ollama server) works by setting:
 """
 import json
 import os
+import re
 import time
 import urllib.error
 import urllib.request
@@ -16,7 +17,7 @@ import urllib.request
 from . import env
 
 BASE = os.environ.get("POLLUTRACE_LLM_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai")
-MODEL = os.environ.get("POLLUTRACE_LLM_MODEL", "gemini-2.5-flash")
+MODEL = os.environ.get("POLLUTRACE_LLM_MODEL", "")  # empty: discover the newest available "flash" model
 
 
 def _key():
@@ -29,13 +30,38 @@ def _key():
     return ""
 
 
+def _discover():
+    """Ask the provider which models exist and pick the newest general-purpose 'flash' model.
+    Hard-coded model names go stale (gemini-2.5-flash was retired for new keys)."""
+    req = urllib.request.Request(BASE.rstrip("/") + "/models",
+                                 headers={"Authorization": "Bearer " + _key(), "User-Agent": "pollutrace"})
+    with urllib.request.urlopen(req, timeout=60) as r:
+        data = json.loads(r.read().decode("utf-8"))
+    ids = [m["id"].split("/")[-1] for m in data.get("data", [])]
+    bad = ("lite", "image", "tts", "audio", "live", "embedding", "preview", "exp", "thinking", "8b")
+    cands = [i for i in ids if "flash" in i and not any(b in i for b in bad)]
+    if not cands:
+        cands = [i for i in ids if "flash" in i] or ids
+
+    def ver(i):
+        return tuple(int(x) for x in re.findall(r"\d+", i)[:3])
+    return max(cands, key=ver)
+
+
+def model():
+    global MODEL
+    if not MODEL:
+        MODEL = _discover()
+    return MODEL
+
+
 def info():
-    return {"base_url": BASE, "model": MODEL}
+    return {"base_url": BASE, "model": model()}
 
 
 def chat(messages, temperature=0.0, max_tokens=16000, retries=6):
     """Returns dict(text, prompt_tokens, completion_tokens, total_tokens, secs)."""
-    body = json.dumps({"model": MODEL, "messages": messages, "temperature": temperature,
+    body = json.dumps({"model": model(), "messages": messages, "temperature": temperature,
                        "max_tokens": max_tokens}).encode("utf-8")
     headers = {"Content-Type": "application/json", "User-Agent": "pollutrace"}
     key = _key()

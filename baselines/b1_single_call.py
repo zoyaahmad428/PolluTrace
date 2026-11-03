@@ -41,6 +41,9 @@ FIELDS = ["id", "victim", "outcome", "compiled", "fix", "passes_all_known_pollut
           "prompt_tokens", "completion_tokens", "llm_secs", "victim_secs", "model", "detail"]
 
 
+RETRY = {"llm_error"}
+
+
 def extract_java(text):
     blocks = re.findall(r"```(?:java)?\s*\n(.*?)```", text, flags=re.S)
     return max(blocks, key=len) if blocks else None
@@ -50,7 +53,7 @@ def run_one(r, n):
     v, cp = r["victim"], r["confirmed_polluter"]
     pol = [p for p in r["polluters"].split(";") if p]
     proj = Project(r["project_url"], r["sha"], r["module"])
-    rec = {"id": r["id"], "victim": v, "model": llm.MODEL}
+    rec = {"id": r["id"], "victim": v, "model": llm.model()}
     dossier = {"system": "B1", "victim": v, "project": r["project_url"], "sha": r["sha"], "module": r["module"],
                "failing_order": [cp, v], "llm": llm.info(), "runs": [], "patches": []}
     fail = proj.run_order([cp, v])
@@ -114,9 +117,17 @@ def main():
         rows = list(csv.DictReader(f))
     out = env.RESULTS / "b1_single_call.csv"
     done = set()
-    if out.exists():
+    if out.exists():  # keep finished rows; redo rows that failed for infrastructure reasons
         with open(out, encoding="utf-8") as f:
-            done = {x["id"] for x in csv.DictReader(f)}
+            old = list(csv.DictReader(f))
+        keep = [x for x in old if x["outcome"] not in RETRY]
+        with open(out, "w", newline="", encoding="utf-8") as f:
+            w = csv.DictWriter(f, fieldnames=FIELDS)
+            w.writeheader()
+            for x in keep:
+                w.writerow({k: x.get(k, "") for k in FIELDS})
+        done = {x["id"] for x in keep}
+    print("LLM:", llm.info(), flush=True)
     for r in rows:
         if r["id"] in done:
             continue
