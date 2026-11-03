@@ -89,7 +89,7 @@ def run_one(r, n):
         rec["accepted"] = rec["fix"] and integ["ok"]
         if rec["accepted"]:
             rr = random_orders(proj, v, pol, n, seed=7)
-            rec.update(rand_n=n, rand_fails=rr["fails"] + rr["errors"], false_fix=(rr["fails"] + rr["errors"]) > 0,
+            rec.update(rand_n=rr["n_run"], rand_fails=rr["fails"] + rr["errors"], false_fix=(rr["fails"] + rr["errors"]) > 0,
                        first_fail_index=rr["first_fail_index"] or "", mean_order_secs=rr["mean_order_secs"],
                        rand_secs=rr["total_secs"])
             dossier["validation"] = rr
