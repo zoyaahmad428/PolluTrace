@@ -35,8 +35,10 @@ def main():
         proj = Project(r["project_url"], r["sha"], r["module"])
         pol = [p for p in r["polluters"].split(";") if p]
         rec = random_orders(proj, r["victim"], pol, a.n, seed=1)
-        row = {"id": r["id"], "victim": r["victim"], "n": a.n, "pool_size": rec["pool_size"],
-               "fails": rec["fails"], "errors": rec["errors"], "fail_rate": round(rec["fails"] / a.n, 3),
+        n_run = max(1, rec["n_run"])
+        row = {"id": r["id"], "victim": r["victim"], "n": n_run, "budget_hit": rec["budget_hit"],
+               "pool_size": rec["pool_size"],
+               "fails": rec["fails"], "errors": rec["errors"], "fail_rate": round(rec["fails"] / n_run, 3),
                "first_fail_index": rec["first_fail_index"] or "", "mean_order_secs": rec["mean_order_secs"],
                "total_secs": rec["total_secs"]}
         new = not out.exists()

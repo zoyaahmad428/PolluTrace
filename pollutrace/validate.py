@@ -13,6 +13,7 @@ import re
 import time
 
 POOL_EXTRA = 20  # other module tests mixed into every randomized order
+MAX_SECS = 900   # time budget per victim for randomized orders (15 min); slow suites stop early
 
 
 def failing_order_check(proj, victim, polluters):
@@ -23,15 +24,19 @@ def failing_order_check(proj, victim, polluters):
     return out
 
 
-def random_orders(proj, victim, polluters, n, seed=0, extra=POOL_EXTRA, stop_on_fail=False):
+def random_orders(proj, victim, polluters, n, seed=0, extra=POOL_EXTRA, stop_on_fail=False, max_secs=MAX_SECS):
     rng = random.Random(seed)
     others = [t for t in proj.list_tests() if t != victim and t not in polluters]
     rng.shuffle(others)
     pool = [victim] + list(polluters) + others[:extra]
-    rec = {"n": n, "pool_size": len(pool), "passes": 0, "fails": 0, "errors": 0,
+    rec = {"n": n, "n_run": 0, "budget_hit": False, "pool_size": len(pool), "passes": 0, "fails": 0, "errors": 0,
            "first_fail_index": None, "order_secs": [], "fail_indices": []}
     t0 = time.time()
     for i in range(n):
+        if max_secs and time.time() - t0 > max_secs:
+            rec["budget_hit"] = True
+            break
+        rec["n_run"] = i + 1
         order = pool[:]
         rng.shuffle(order)
         r = proj.run_order(order)
