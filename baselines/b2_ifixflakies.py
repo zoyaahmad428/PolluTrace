@@ -71,6 +71,8 @@ def add_plugin(pom):
 def run_victim(proj, victim, timeout):
     m = proj.mod()
     dotted = victim.replace("#", ".")
+    # iFixFlakies writes .dtfixingtools/original-order without creating the folder first
+    (proj.mdir / ".dtfixingtools").mkdir(exist_ok=True)
     pl = [] if proj.module == "." else ["-pl", proj.module]
     args = ["testrunner:testplugin"] + pl + SKIP_FLAGS[1:] + [
         f"-Ddt.minimizer.dependent.test={dotted}", "-Ddetector.detector_type=random-class-method",
@@ -95,9 +97,16 @@ def main():
     a = ap.parse_args()
     out = env.RESULTS / "b2_ifixflakies.csv"
     done = set()
-    if out.exists():
+    if out.exists():  # keep finished rows; redo tool errors and timeouts
         with open(out, encoding="utf-8") as f:
-            done = {x["id"] for x in csv.DictReader(f)}
+            old = list(csv.DictReader(f))
+        keep = [x for x in old if x["outcome"] not in ("tool_error", "tool_unavailable")]
+        with open(out, "w", newline="", encoding="utf-8") as f:
+            w = csv.DictWriter(f, fieldnames=FIELDS)
+            w.writeheader()
+            for x in keep:
+                w.writerow({k: x.get(k, "") for k in FIELDS})
+        done = {x["id"] for x in keep}
     with open(env.REPO / "data" / a.set, encoding="utf-8") as f:
         rows = [r for r in csv.DictReader(f) if r["id"] not in done]
     ok, info = install_tool()
