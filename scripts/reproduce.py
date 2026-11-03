@@ -112,9 +112,19 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--projects", default="")
     ap.add_argument("--build-timeout", type=int, default=40, help="minutes per build attempt")
+    ap.add_argument("--retry", default="", help="comma-separated statuses to re-run, e.g. victim_fails_alone")
     a = ap.parse_args()
     rows = load_manifest([p for p in a.projects.split(",") if p])
     out = env.RESULTS / "reproduction.csv"
+    if a.retry and out.exists():
+        retry = set(a.retry.split(","))
+        with open(out, encoding="utf-8") as f:
+            keep = [r for r in csv.DictReader(f) if r["status"] not in retry]
+        with open(out, "w", newline="", encoding="utf-8") as f:
+            w = csv.DictWriter(f, fieldnames=FIELDS)
+            w.writeheader()
+            for r in keep:
+                w.writerow({k: r.get(k, "") for k in FIELDS})
     done = done_ids(out)
     t0 = time.time()
     for i, r in enumerate(rows, 1):

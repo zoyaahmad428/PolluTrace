@@ -161,7 +161,8 @@ class Project:
         m = self.mod()
         out = env.WORK / "tmp" / f"run_{self.root.name}_{int(time.time() * 1000)}_{random.randint(0, 9999)}.json"
         out.parent.mkdir(parents=True, exist_ok=True)
-        cmd = [env.java_bin(m["jdk"]), "-Xmx1g", "-cp", m["pathing_jar"], "OrderRunner", "run", str(out)] + list(order)
+        cmd = [env.java_bin(m["jdk"]), "-Xmx1g"] + _open_flags(m["jdk"]) + \
+              ["-cp", m["pathing_jar"], "OrderRunner", "run", str(out)] + list(order)
         r = env.run(cmd, cwd=self.mdir, env=env.toolchain_env(m["jdk"]), timeout=timeout)
         res = {"order": list(order), "secs": round(r.secs, 2), "timeout": r.timed_out, "results": {}}
         if out.exists():
@@ -196,6 +197,20 @@ class Project:
 
     def revert(self):
         env.run(["git", "checkout", "-q", "--", "."], cwd=self.root, timeout=300)
+
+
+OPENS = ["java.base/java.lang", "java.base/java.lang.reflect", "java.base/java.util", "java.base/java.io",
+         "java.base/java.net", "java.base/java.nio", "java.base/sun.nio.ch", "java.base/java.util.concurrent",
+         "java.base/java.lang.invoke", "java.base/java.text", "java.base/java.math", "java.base/java.time",
+         "java.base/jdk.internal.misc", "java.base/sun.security.x509", "java.rmi/sun.rmi.transport"]
+
+
+def _open_flags(jdk):
+    """JDK 9+ blocks reflective access that pre-2020 libraries (FST, Javassist, cglib) rely on.
+    Opening the packages restores JDK 8 behaviour so a newer JDK does not cause failures of its own."""
+    if jdk == "8":
+        return []
+    return [f"--add-opens={p}=ALL-UNNAMED" for p in OPENS]
 
 
 def _cp_sep(path):
