@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PolluTrace tool interfaces",
+  "description": "Typed tool calls available to agents. Implemented in pollutrace/project.py and pollutrace/validate.py; agent wrappers arrive in Phase 2.",
+  "tools": {
+    "run_tests": {
+      "input": {"order": {"type": "array", "items": {"type": "string"}, "description": "pkg.Class#method, run in this order in one JVM"},
+                "timeout_s": {"type": "integer", "default": 600}},
+      "output": {"results": {"type": "object", "additionalProperties": {"status": "PASS|FAIL|ERROR|NOT_FOUND|SKIPPED", "trace": "string"}},
+                 "secs": {"type": "number"}, "timeout": {"type": "boolean"}},
+      "impl": "Project.run_order"
+    },
+    "list_tests": {"input": {}, "output": {"tests": {"type": "array", "items": {"type": "string"}}}, "impl": "Project.list_tests"},
+    "read_source": {"input": {"test": {"type": "string"}}, "output": {"path": "string", "source": "string"}, "impl": "Project.test_source"},
+    "apply_patch": {"input": {"path": "string", "new_source": "string"}, "output": {"compiled": "boolean", "log": "string"}, "impl": "write file + Project.recompile"},
+    "revert_patch": {"input": {}, "output": {}, "impl": "Project.revert + Project.recompile"},
+    "check_assertions": {"input": {"original": "string", "patched": "string", "method": "string"},
+                         "output": {"ok": "boolean", "issues": {"type": "array", "items": {"type": "string"}}}, "impl": "validate.integrity"},
+    "random_orders": {"input": {"victim": "string", "n": "integer", "seed": "integer"},
+                      "output": {"passes": "integer", "fails": "integer", "first_fail_index": "integer|null", "mean_order_secs": "number"},
+                      "impl": "validate.random_orders"},
+    "static_fields": {"input": {"class": "string"}, "output": {"fields": "array"}, "impl": "Phase 2 (JavaParser)"},
+    "snapshot_state": {"input": {"test": "string"}, "output": {"fields": "object"}, "impl": "Phase 2 (reflection dumper)"}
+  }
+}

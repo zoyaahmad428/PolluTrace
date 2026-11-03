@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PolluTrace flakiness dossier",
+  "description": "Shared state for one victim. Every system (baselines and PolluTrace) writes one dossier per victim to results/dossiers/<system>/<id>.json.",
+  "type": "object",
+  "required": ["system", "victim", "project", "sha", "module", "runs", "patches"],
+  "properties": {
+    "system": {"type": "string", "enum": ["B1", "B2", "B3", "B4", "B5", "PolluTrace"]},
+    "victim": {"type": "string", "description": "pkg.Class#method"},
+    "project": {"type": "string", "format": "uri"},
+    "sha": {"type": "string"},
+    "module": {"type": "string"},
+    "failing_order": {"type": "array", "items": {"type": "string"}},
+    "llm": {"type": "object", "properties": {"base_url": {"type": "string"}, "model": {"type": "string"}}},
+    "suspects": {
+      "type": "array",
+      "items": {"type": "object", "required": ["test", "score"],
+                "properties": {"test": {"type": "string"}, "score": {"type": "number"},
+                               "evidence": {"type": "array", "items": {"type": "string"}}}}
+    },
+    "runs": {
+      "type": "array",
+      "items": {"type": "object", "required": ["order", "result"],
+                "properties": {"order": {"type": "array", "items": {"type": "string"}},
+                               "result": {"type": "string", "enum": ["PASS", "FAIL", "ERROR", "TIMEOUT", "NOT_FOUND", "SKIPPED"]},
+                               "secs": {"type": "number"}}}
+    },
+    "confirmed_polluter": {"type": ["string", "null"]},
+    "state_diff": {
+      "type": "array",
+      "items": {"type": "object", "required": ["field"],
+                "properties": {"field": {"type": "string"}, "before": {}, "after": {}, "writer": {"type": "string"}}}
+    },
+    "patches": {
+      "type": "array",
+      "items": {"type": "object", "required": ["id", "verdict"],
+                "properties": {"id": {"type": "string"},
+                               "site": {"type": "string", "enum": ["victim_setup", "polluter_teardown", "state_owner", "victim_file"]},
+                               "diff": {"type": "string"},
+                               "verdict": {"type": "string", "enum": ["ACCEPT", "REJECT"]},
+                               "reason": {"type": "string"},
+                               "failing_order_check": {"type": "array"},
+                               "integrity": {"type": "object"}}}
+    },
+    "validation": {
+      "type": "object",
+      "properties": {"n": {"type": "integer"}, "pool_size": {"type": "integer"}, "passes": {"type": "integer"},
+                     "fails": {"type": "integer"}, "first_fail_index": {"type": ["integer", "null"]},
+                     "mean_order_secs": {"type": "number"}, "total_secs": {"type": "number"}}
+    },
+    "budget": {
+      "type": "object",
+      "properties": {"test_runs_used": {"type": "integer"}, "test_runs_max": {"type": "integer"},
+                     "tokens_used": {"type": "integer"}, "tokens_max": {"type": "integer"}}
+    }
+  }
+}
