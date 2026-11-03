@@ -21,6 +21,7 @@ TOOLS = WORK / "tools"
 PROJECTS = WORK / "projects"
 RESULTS = REPO / "results"
 IS_WIN = platform.system() == "Windows"
+RESULTS.mkdir(parents=True, exist_ok=True)
 
 JDKS = ["8", "11", "17"]
 # Maven 3.6.3 still allows the plain-http repositories that many older IDoFT projects use;

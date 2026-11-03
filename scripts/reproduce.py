@@ -17,7 +17,7 @@ from pollutrace import env  # noqa: E402
 from pollutrace.project import Project  # noqa: E402
 
 FIELDS = ["id", "project", "module", "victim", "status", "jdk", "maven", "build_secs", "n_module_tests",
-          "alone", "confirmed_polluter", "polluters_tried", "secs_alone_order", "secs_pair_order", "detail"]
+          "alone", "confirmed_polluter", "polluters_tried", "secs_alone_order", "secs_pair_order", "failure_kind", "detail"]
 
 
 def load_manifest(projects=None):
@@ -44,6 +44,24 @@ def append(path, row):
         w.writerow({k: row.get(k, "") for k in FIELDS})
 
 
+KINDS = [("missing_dependency", ("Non-resolvable", "Could not find artifact", "Could not resolve dependencies",
+                                  "Failure to find", "Could not transfer artifact", "Unresolveable")),
+         ("plugin_error", ("Plugin resolution", "PluginResolutionException", "Unable to load the mojo",
+                           "Failed to execute goal org.apache.maven.plugins")),
+         ("compile_error", ("COMPILATION ERROR", "compilation failure", "Compilation failure")),
+         ("missing_module", ("Could not find the selected project",)),
+         ("toolchain", ("toolchain", "Unsupported class file", "release version"))]
+
+
+def classify(attempts):
+    """Category of the LAST build attempt's error (the newest JDK tried)."""
+    err = " ".join(a.get("error", "") for a in attempts[-1:])
+    for kind, keys in KINDS:
+        if any(k in err for k in keys):
+            return kind
+    return "other"
+
+
 def reproduce(r, build_timeout):
     proj = Project(r["project_url"], r["sha"], r["module"])
     out = {"id": r["id"], "project": r["project_url"].split("/")[-1], "module": r["module"], "victim": r["victim"]}
@@ -59,6 +77,7 @@ def reproduce(r, build_timeout):
         att = m.get("attempts", [])
         timed = any(a.get("timeout") for a in att)
         return {**out, "status": "build_timeout" if timed else "build_failed",
+                "failure_kind": "timeout" if timed else classify(att),
                 "detail": " || ".join(f"jdk{a['jdk']}: {a.get('error', '')[:150]}" for a in att)[:600]}
     out.update(jdk=m["jdk"], maven=m["maven"], build_secs=m["build_secs"])
     tests = proj.list_tests()
