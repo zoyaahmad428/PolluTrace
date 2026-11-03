@@ -227,5 +227,7 @@ def _pathing_jar(jar, entries):
 
 
 def _err_summary(out):
-    lines = [l for l in out.splitlines() if "[ERROR]" in l and "Re-run Maven" not in l and "-> [Help" not in l]
+    lines = [l for l in out.splitlines() if ("[FATAL]" in l or "[ERROR]" in l)
+             and "Re-run Maven" not in l and "[Help" not in l and l.strip() not in ("[ERROR]", "[ERROR] [ERROR]")]
+    lines.sort(key=lambda l: "[FATAL]" not in l)  # root cause first
     return " | ".join(lines[:4])[:600] or out[-400:]
