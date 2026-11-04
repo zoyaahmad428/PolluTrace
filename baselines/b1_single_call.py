@@ -70,7 +70,8 @@ def run_one(r, n):
         resp = llm.chat([{"role": "system", "content": SYSTEM}, {"role": "user", "content": msg}])
     except RuntimeError as e:
         return {**rec, "outcome": "llm_error", "detail": str(e)[:300]}, dossier
-    rec.update(prompt_tokens=resp["prompt_tokens"], completion_tokens=resp["completion_tokens"], llm_secs=resp["secs"])
+    rec.update(prompt_tokens=resp["prompt_tokens"], completion_tokens=resp["completion_tokens"], llm_secs=resp["secs"],
+               model=resp.get("model", rec["model"]))
     code = extract_java(resp["text"])
     if not code:
         return {**rec, "outcome": "no_code_in_reply", "detail": resp["text"][:200]}, dossier

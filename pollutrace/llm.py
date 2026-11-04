@@ -45,7 +45,12 @@ def _discover():
 
     def ver(i):
         return tuple(int(x) for x in re.findall(r"\d+", i)[:3])
-    return max(cands, key=ver)
+    ranked = sorted(cands, key=ver, reverse=True)
+    FALLBACKS[:] = ranked[1:3]  # next-best models, used only if the first stays overloaded
+    return ranked[0]
+
+
+FALLBACKS = []
 
 
 def model():
@@ -59,9 +64,25 @@ def info():
     return {"base_url": BASE, "model": model()}
 
 
-def chat(messages, temperature=0.0, max_tokens=16000, retries=6):
-    """Returns dict(text, prompt_tokens, completion_tokens, total_tokens, secs)."""
-    body = json.dumps({"model": model(), "messages": messages, "temperature": temperature,
+def chat(messages, temperature=0.0, max_tokens=16000, retries=8):
+    """Returns dict(text, model, prompt_tokens, completion_tokens, total_tokens, secs).
+    If the chosen model stays overloaded (HTTP 503/429) through all retries, the call is
+    repeated once with each fallback model; the model actually used is returned."""
+    last = None
+    for m in [model()] + [f for f in FALLBACKS if f != model()]:
+        try:
+            r = _chat_one(m, messages, temperature, max_tokens, retries)
+            r["model"] = m
+            return r
+        except RuntimeError as e:
+            last = e
+            if "HTTP 503" not in str(e) and "HTTP 429" not in str(e):
+                raise
+    raise last
+
+
+def _chat_one(mname, messages, temperature, max_tokens, retries):
+    body = json.dumps({"model": mname, "messages": messages, "temperature": temperature,
                        "max_tokens": max_tokens}).encode("utf-8")
     headers = {"Content-Type": "application/json", "User-Agent": "pollutrace"}
     key = _key()
@@ -86,11 +107,11 @@ def chat(messages, temperature=0.0, max_tokens=16000, retries=6):
             last = f"HTTP {e.code}: {e.read().decode('utf-8', 'replace')[:500]}"
             if e.code in (429, 500, 502, 503, 504):
                 time.sleep(delay)
-                delay = min(delay * 2, 120)
+                delay = min(delay * 2, 180)
                 continue
             break
         except Exception as e:  # network hiccup
             last = str(e)
             time.sleep(delay)
-            delay = min(delay * 2, 120)
+            delay = min(delay * 2, 180)
     raise RuntimeError(f"LLM call failed: {last}")
