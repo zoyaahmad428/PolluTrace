@@ -53,6 +53,13 @@ def _discover():
 FALLBACKS = []
 
 
+def _promote(m):
+    global MODEL
+    old = MODEL
+    MODEL = m
+    FALLBACKS[:] = [f for f in FALLBACKS if f != m] + ([old] if old else [])
+
+
 def model():
     global MODEL
     if not MODEL:
@@ -64,7 +71,7 @@ def info():
     return {"base_url": BASE, "model": model()}
 
 
-def chat(messages, temperature=0.0, max_tokens=16000, retries=8):
+def chat(messages, temperature=0.0, max_tokens=16000, retries=3):
     """Returns dict(text, model, prompt_tokens, completion_tokens, total_tokens, secs).
     If the chosen model stays overloaded (HTTP 503/429) through all retries, the call is
     repeated once with each fallback model; the model actually used is returned."""
@@ -73,6 +80,8 @@ def chat(messages, temperature=0.0, max_tokens=16000, retries=8):
         try:
             r = _chat_one(m, messages, temperature, max_tokens, retries)
             r["model"] = m
+            if m != MODEL:  # a fallback answered: keep using it for the remaining calls
+                _promote(m)
             return r
         except RuntimeError as e:
             last = e
