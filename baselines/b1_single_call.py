@@ -41,7 +41,7 @@ FIELDS = ["id", "victim", "outcome", "compiled", "fix", "passes_all_known_pollut
           "prompt_tokens", "completion_tokens", "llm_secs", "victim_secs", "model", "detail"]
 
 
-RETRY = {"llm_error"}
+RETRY = {"llm_error", "not_failing_now"}
 
 
 def extract_java(text):
@@ -56,6 +56,10 @@ def run_one(r, n):
     rec = {"id": r["id"], "victim": v, "model": llm.model()}
     dossier = {"system": "B1", "victim": v, "project": r["project_url"], "sha": r["sha"], "module": r["module"],
                "failing_order": [cp, v], "llm": llm.info(), "runs": [], "patches": []}
+    if proj.diff().strip():  # a previous run was killed mid-patch: restore the checkout first
+        proj.revert()
+        proj.recompile()
+        dossier["restored_dirty_checkout"] = True
     fail = proj.run_order([cp, v])
     dossier["runs"].append({"order": [cp, v], "result": proj.status(fail, v), "secs": fail["secs"]})
     if proj.status(fail, v) != "FAIL":

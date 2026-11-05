@@ -122,6 +122,9 @@ def main():
         else:
             pom = proj.mdir / "pom.xml"
             backup = pom.with_suffix(".xml.pt-bak")
+            if backup.exists():  # a previous run was killed: put the original pom back
+                shutil.move(backup, pom)
+            proj.revert()
             shutil.copy(pom, backup)
             try:
                 add_plugin(pom)
