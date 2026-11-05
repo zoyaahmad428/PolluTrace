@@ -12,6 +12,7 @@ is read from .dtfixingtools/fixer/<victim>.json.
 import argparse
 import csv
 import json
+import os
 import shutil
 import sys
 import time
@@ -24,7 +25,7 @@ from pollutrace import env  # noqa: E402
 from pollutrace.project import Project, SKIP_FLAGS  # noqa: E402
 
 SRC = "https://github.com/winglam/iFixFlakies"
-FIELDS = ["id", "victim", "outcome", "ifix_status", "fix", "module_secs", "detail"]
+FIELDS = ["id", "victim", "outcome", "ifix_status", "fix", "module_secs", "runner", "detail"]
 NS = "http://maven.apache.org/POM/4.0.0"
 
 
@@ -68,6 +69,23 @@ def add_plugin(pom):
     tree.write(pom, xml_declaration=True, encoding="UTF-8")
 
 
+IMAGES = {"8": "maven:3.6.3-jdk-8", "11": "maven:3.6.3-jdk-11", "17": "maven:3.9.9-eclipse-temurin-17"}
+_DOCKER = None
+
+
+def use_docker():
+    """Use Docker (Linux) on Windows when Docker is running; POLLUTRACE_B2_DOCKER=0/1 forces it."""
+    global _DOCKER
+    if _DOCKER is None:
+        force = os.environ.get("POLLUTRACE_B2_DOCKER")
+        if force in ("0", "1"):
+            _DOCKER = force == "1"
+        else:
+            _DOCKER = env.IS_WIN and env.run(["docker", "info"], timeout=120).ok
+        print("B2 runner:", "docker (Linux container)" if _DOCKER else "native", flush=True)
+    return _DOCKER
+
+
 def run_victim(proj, victim, timeout):
     m = proj.mod()
     dotted = victim.replace("#", ".")
@@ -77,8 +95,16 @@ def run_victim(proj, victim, timeout):
     args = ["testrunner:testplugin"] + pl + SKIP_FLAGS[1:] + [
         f"-Ddt.minimizer.dependent.test={dotted}", "-Ddetector.detector_type=random-class-method",
         "-Ddt.randomize.rounds=20", "-Ddt.detector.original_order.all_must_pass=false"]
-    r = env.run([env.mvn_bin(m["maven"]), "-B"] + args, cwd=proj.root, env=env.toolchain_env(m["jdk"]),
-                timeout=timeout, log=env.WORK / "logs" / f"b2_{proj.root.name}.log")
+    log = env.WORK / "logs" / f"b2_{proj.root.name}.log"
+    if use_docker():
+        # iFixFlakies' test runner deletes temp files that Windows still has open; under Linux it works.
+        # Same checkout and Maven cache, mounted into a container with the project's JDK.
+        cmd = ["docker", "run", "--rm", "-v", f"{proj.root}:/w", "-v", f"{Path.home() / '.m2'}:/root/.m2",
+               "-w", "/w", IMAGES[m["jdk"]], "mvn", "-B"] + args
+        r = env.run(cmd, timeout=timeout, log=log)
+    else:
+        r = env.run([env.mvn_bin(m["maven"]), "-B"] + args, cwd=proj.root, env=env.toolchain_env(m["jdk"]),
+                    timeout=timeout, log=log)
     res = proj.mdir / ".dtfixingtools" / "fixer" / f"{dotted}.json"
     status = ""
     if res.exists():
@@ -142,7 +168,8 @@ def main():
                         outcome = "tool_error"
                     err = " | ".join(l for l in res.out.splitlines() if "[ERROR]" in l or "Exception" in l)[:300]
                     recs.append({"id": r["id"], "victim": r["victim"], "outcome": outcome, "ifix_status": status,
-                                 "fix": fixed, "module_secs": round(time.time() - t0, 1), "detail": err})
+                                 "fix": fixed, "module_secs": round(time.time() - t0, 1),
+                                 "runner": "docker" if use_docker() else "native", "detail": err})
             finally:
                 shutil.move(backup, pom)
                 proj.revert()
