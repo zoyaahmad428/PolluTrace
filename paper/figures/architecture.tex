@@ -1,0 +1,31 @@
+% Architecture of PolluTrace (TikZ). Used by main.tex as Fig. 1.
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  font=\footnotesize, >={Stealth[length=2mm]},
+  box/.style={draw, rounded corners=2pt, align=center, minimum height=9mm, inner sep=3pt, fill=white},
+  agent/.style={box, fill=blue!6, text width=27mm},
+  io/.style={box, fill=gray!10, text width=24mm},
+  tool/.style={box, fill=orange!8, text width=26mm, minimum height=7mm},
+  lab/.style={font=\scriptsize\itshape, align=center}]
+  \node[io] (in) {Failing order\\$t_1,\dots,t_k,v$\\+ failure trace};
+  \node[agent, right=8mm of in] (loc) {\textbf{Localizer} (G1)\\static ranking + LLM\\re-rank, confirm by run};
+  \node[agent, right=8mm of loc] (sd) {\textbf{State diff} (G2)\\static fields, system\\properties: clean vs.\ $p$};
+  \node[agent, right=8mm of sd] (rep) {\textbf{Repair}\\LLM patch to victim\\or polluter class};
+  \node[agent, right=8mm of rep] (val) {\textbf{Validator} (G3)\\integrity, failing order,\\polluters, alone, $N{=}20$};
+  \node[io, right=8mm of val] (out) {Accepted patch\\$\rightarrow$ final evaluation\\(100 orders)};
+  \node[box, fill=green!6, text width=170mm, above=15mm of $(loc)!0.5!(val)$] (sup)
+       {\textbf{Supervisor}: budgets (LLM calls, test runs, time), trajectory log, feedback routing, backtracking};
+  \node[tool, below=8mm of loc] (run) {OrderRunner \texttt{run}\\(one fresh JVM per order)};
+  \node[tool, below=8mm of sd] (state) {OrderRunner \texttt{state}\\(reflection snapshot)};
+  \node[tool, below=8mm of rep] (llm) {LLM (OpenAI-\\compatible API)};
+  \node[tool, below=8mm of val] (mvn) {Maven compile\\+ randomized orders};
+  \draw[->] (in) -- (loc);
+  \draw[->] (loc) -- node[above, lab]{$p$} (sd);
+  \draw[->] (sd) -- node[above, lab]{diff} (rep);
+  \draw[->] (rep) -- node[above, lab]{patch} (val);
+  \draw[->] (val) -- node[above, lab]{accept} (out);
+  \draw[->] (val.south west) to[bend left=35] node[below, lab, pos=0.5]{reject: feedback} (rep.south east);
+  \draw[->, dashed] (val.north) to[bend right=12] node[below, lab, pos=0.5]{failing random order $\rightarrow$ 2nd polluter} (loc.north);
+  \foreach \a/\t in {loc/run, sd/state, rep/llm, val/mvn} \draw[<->, gray] (\a) -- (\t);
+  \foreach \a in {loc, sd, rep, val} \draw[gray, densely dotted] (sup.south -| \a.north) -- (\a.north);
+\end{tikzpicture}}
