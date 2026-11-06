@@ -175,6 +175,9 @@ def main():
             shutil.copy(pom, backup)
             try:
                 add_plugin(pom)
+                # state left by earlier failed attempts (e.g. an empty original-order) makes
+                # iFixFlakies conclude "Module has no tests"; start each module from a clean slate
+                shutil.rmtree(proj.mdir / ".dtfixingtools", ignore_errors=True)
                 ok_rep, rep_secs = ensure_surefire_reports(proj, a.timeout * 60)
                 print(f"  surefire reports for {proj.root.name}/{proj.module}: "
                       f"{'ok' if ok_rep else 'missing'} ({rep_secs:.0f} s)", flush=True)
