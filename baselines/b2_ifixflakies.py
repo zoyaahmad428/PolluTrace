@@ -141,8 +141,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--set", default="dev_set.csv")
     ap.add_argument("--timeout", type=int, default=60, help="minutes per victim")
+    ap.add_argument("--out", default="b2_ifixflakies.csv", help="CSV path under results/")
     a = ap.parse_args()
-    out = env.RESULTS / "b2_ifixflakies.csv"
+    out = env.RESULTS / a.out
+    out.parent.mkdir(parents=True, exist_ok=True)
     done = set()
     if out.exists():  # keep finished rows; redo tool errors and timeouts
         with open(out, encoding="utf-8") as f:

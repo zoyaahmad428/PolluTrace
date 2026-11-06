@@ -3,9 +3,43 @@
 Execution-grounded multi-agent localization and repair of order-dependent (OD) flaky tests.
 AI4015 Agentic AI, Fall 2026, FAST-NUCES Islamabad. Zoya Ahmad and Zarpash Nasim.
 
-This repository holds the Phase 1 technical foundation: the IDoFT data pipeline, a
-reproducible test-order runner, patch validation, and baselines **B1** (single LLM call)
-and **B2** (iFixFlakies), with their results on the development set.
+Phase 1 built the technical foundation: the IDoFT data pipeline, a reproducible test-order
+runner, patch validation, and baselines **B1** (single LLM call) and **B2** (iFixFlakies).
+Phase 2 adds the PolluTrace multi-agent system, the NIODebugger-style base-paper pipeline,
+and the experiments E1–E6.
+
+## Changes since Phase 1
+
+| Area | Phase 1 | Phase 2 |
+|---|---|---|
+| System | baselines only | supervisor + 4 agents: localizer (G1), state diff (G2), repair, validator (G3) |
+| Ablation | – | every gap component can be switched off (`pollutrace/config.py` presets) |
+| Base paper | – | B4: NIODebugger-style pipeline re-implemented in our harness (`baselines/b4_niodebugger.py`) |
+| Inputs to systems | B1: confirmed failing pair | all systems get the same fixed failing order (30 module tests + hidden polluter + victim) and its trace; never the IDoFT polluters |
+| Evaluation | per-baseline scripts | one harness for all systems (`pollutrace/harness.py`): same final check, 3 runs, mean ± std |
+| Logging | dossier per victim | plus full trajectories (every LLM call, test run, compile, decision) in `logs/trajectories/` |
+| Test set | 75 held-out victims | fixed subset `data/test_subset.csv` (rule in `scripts/make_subset.py`) so 3 runs fit the time budget |
+| Integrity check | assertions, ignore, early return | also swallowed exceptions; checks the polluter file when it is patched |
+
+## Architecture (Phase 2)
+
+```
+failing order + trace
+        │
+   Supervisor (pollutrace/supervisor.py)  budgets: LLM calls, test runs, wall time
+        │
+        ├─► Localizer (G1)   static shared-state ranking + LLM re-rank → confirm by execution
+        │                    (singles, then groups of 8 with bisection)        → polluter
+        ├─► State diff (G2)  OrderRunner `state`: static fields + system properties after
+        │                    a clean JVM vs. after the polluter                  → what changed
+        ├─► Repair           LLM edits the victim or the polluter test class, using all of the above
+        │        ▲
+        │        │ feedback (compile errors, new failures, integrity issues)
+        └─► Validator (G3)   integrity → failing order → after each polluter → alone → N=20 random orders
+                 │ a failing random order → back to the localizer for a second polluter (backtracking)
+                 ▼
+         accepted patch → harness final evaluation (IDoFT ground truth, N=100 orders)
+```
 
 ## Requirements
 
@@ -24,7 +58,7 @@ recorded. Works on Windows, Linux and macOS.
 git clone https://github.com/zoyaahmad428/PolluTrace.git
 cd PolluTrace
 python run_phase1.py setup manifest reproduce split   # data pipeline (hours: builds 20 projects)
-# B1 needs an LLM key: set GEMINI_API_KEY (default model gemini-2.5-flash), or see pollutrace/llm.py
+# B1 needs an LLM key: set GEMINI_API_KEY (model auto-discovered), or see pollutrace/llm.py
 python run_phase1.py probe b1 b2 summary
 ```
 
@@ -41,6 +75,56 @@ Each step resumes where it stopped. Logs go to `../work/logs/`; results go to `r
 | b2 | `baselines/b2_ifixflakies.py` | `results/b2_ifixflakies.csv` |
 | summary | `eval/summarize.py` | `results/summary.md` |
 
+## Phase 2: run PolluTrace and the experiments
+
+Same requirements as Phase 1 (Python 3.9+, standard library only; `requirements.txt` lists
+optional test tools). Configure the LLM with environment variables (see `.env.example`):
+
+| Variable | Meaning |
+|---|---|
+| `POLLUTRACE_LLM_API_KEY` | API key (or `GEMINI_API_KEY`, or a key file at `../work/secrets/llm_key.txt`) |
+| `POLLUTRACE_LLM_BASE_URL` | OpenAI-compatible endpoint; default Gemini |
+| `POLLUTRACE_LLM_MODEL` | model id; empty = newest available "flash" model, recorded in every result row |
+| `POLLUTRACE_WORK` | work folder for toolchains and checkouts (default `../work`) |
+
+```bash
+python scripts/make_subset.py                    # data/test_subset.csv (fixed rule, before any run)
+python -m unittest discover -s tests -t .        # unit tests (no Java needed)
+python experiments/e1_baselines.py               # E1  B1 x3 runs, B2 x1
+python experiments/e2_base_paper.py              # E2  NIODebugger-style pipeline x3
+python experiments/e3_pollutrace.py              # E3  full PolluTrace x3
+python experiments/e4_g1_localization.py         # E4  G1: executions to find the polluter
+python experiments/e4_g2_statediff.py            # E4  G2: with vs without the state diff (= E3 vs A2)
+python experiments/e4_g3_validator.py            # E4  G3: seeded bad patches, strict vs weak validator
+python experiments/e4_g3_validator.py --sweep    #     G3: false fixes caught within N orders
+python experiments/e5_ablation.py                # E5  A1 no localizer, A2 no state diff, A3 weak validator
+python experiments/e6_efficiency.py              # E6  tokens, time, test executions, run-to-run variation
+python eval/stats.py                             # all tables (mean ± std over runs) -> results/phase2_tables.md
+python eval/failure_analysis.py                  # failure categories, 2 success + 2 failure trajectories
+```
+
+Every experiment accepts `--set`, `--runs`, `--shard i/k` (split projects across machines),
+`--limit` and `--ids` (smoke tests), `--n-final` and `--final-secs`. Each step resumes where it
+stopped. Outputs: `results/<E>/<system>/run<k>.csv`, dossiers next to them, trajectories in
+`logs/trajectories/`.
+
+### Protocol
+
+* Prompts and budgets were set on the 15-victim development set only; the test subset is never used for tuning.
+* 3 independent runs per LLM system (temperature 0.2); seeds are derived from victim id and run number.
+* Final evaluation is identical for every system: victim after every known IDoFT polluter,
+  assertion integrity, and 100 randomized orders (15-minute cap per victim).
+
+### Gap-resolution table
+
+Filled from `results/phase2_tables.md` after the runs (`eval/stats.py` writes it).
+
+| Gap | Component | Experiment | Metric |
+|---|---|---|---|
+| G1: polluter search is blind / expensive | Localizer | E4-G1, E5 A1 | executions until a known polluter is found; fix rate without it |
+| G2: repair lacks the actual polluted state | State diff | E4-G2, E5 A2 | fix rate and iterations with vs without the diff |
+| G3: "passes once" accepts false fixes | Validator | E4-G3, E5 A3 | seeded bad patches rejected; false-fix rate with vs without |
+
 ## Layout
 
 ```
@@ -49,6 +133,15 @@ pollutrace/env.py         portable toolchains, paths, subprocess helper
 pollutrace/project.py     clone at SHA, build, pathing-jar classpath, run orders, patch/revert
 pollutrace/validate.py    failing-order check, N randomized orders, assertion-integrity check
 pollutrace/llm.py         provider-agnostic OpenAI-compatible client (Gemini by default)
+pollutrace/config.py      system configurations and ablation presets
+pollutrace/harness.py     shared experiment loop, fixed failing orders, final evaluation, B1 as a system
+pollutrace/trajectory.py  trajectory logging, LLM/test/compile accounting, budgets
+pollutrace/static_state.py  static shared-state analysis of Java test sources
+pollutrace/agents/        localizer (G1), validator (G3), state diff (G2), repair
+pollutrace/supervisor.py  orchestration: budgets, repair loop, backtracking
+experiments/              E1–E6 scripts
+tests/                    unit tests (fake project, no Java)
+docs/devlog.md            development log: failures, changes, effects
 baselines/                B1 single LLM call, B2 iFixFlakies (built from source)
 contracts/                JSON schemas: flakiness dossier, tool interfaces
 eval/summarize.py         tables for the report
