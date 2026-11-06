@@ -1,0 +1,5 @@
+# PolluTrace runs on the Python 3.9+ standard library only (no third-party packages at runtime).
+# Java 8/11/17 and Maven are downloaded as portable archives by scripts/setup_tools.py.
+# Optional, for development:
+pytest>=7.0
+pyflakes>=3.0

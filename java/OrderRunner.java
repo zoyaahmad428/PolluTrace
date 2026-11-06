@@ -5,11 +5,21 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.annotation.Annotation;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Array;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.TreeMap;
 
 /**
  * Runs a list of JUnit test methods in the given order inside ONE JVM, so static state
@@ -22,6 +32,12 @@ import java.util.List;
  * Usage:
  *   java -cp <runner-dir + project test classpath> OrderRunner run  out.json  pkg.Cls#m1 pkg.Cls#m2 ...
  *   java -cp <...> OrderRunner list out.txt  <test-classes-dir>
+ *   java -cp <...> OrderRunner state out.json classes.txt [pkg.Cls#m ...]
+ *
+ * "state" (PolluTrace G2) runs the given tests (possibly none), then snapshots the static
+ * fields of every class listed in classes.txt plus system properties, default locale and
+ * time zone. Comparing the snapshot of a clean JVM with the snapshot after the polluter
+ * shows exactly which shared state the polluter left behind.
  */
 public class OrderRunner {
 
@@ -36,12 +52,23 @@ public class OrderRunner {
             run(args[1], tests);
         } else if (args[0].equals("list")) {
             list(args[1], new File(args[2]));
+        } else if (args[0].equals("state")) {
+            List<String> tests = new ArrayList<String>();
+            for (int i = 3; i < args.length; i++) tests.add(args[i]);
+            state(args[1], args[2], tests);
         }
         System.exit(0); // do not wait for non-daemon threads left by tests
     }
 
     // ------------------------------------------------------------------ run
     static void run(String out, List<String> tests) throws Exception {
+        Writer w = new OutputStreamWriter(new FileOutputStream(out), "UTF-8");
+        w.write(runTests(tests).append('}').toString());
+        w.close();
+    }
+
+    /** Runs the tests and returns the JSON object text without its closing brace. */
+    static StringBuilder runTests(List<String> tests) {
         StringBuilder sb = new StringBuilder("{\"results\":[");
         for (int i = 0; i < tests.size(); i++) {
             String t = tests.get(i);
@@ -64,10 +91,129 @@ public class OrderRunner {
             sb.append("{\"test\":").append(q(t)).append(",\"status\":").append(q(status))
               .append(",\"ms\":").append(ms).append(",\"trace\":").append(q(cut(trace, 6000))).append('}');
         }
+        sb.append(']');
+        return sb;
+    }
+
+    // ---------------------------------------------------------------- state
+    static final int MAX_REPR = 400, MAX_ELEMS = 8, MAX_DEPTH = 2;
+
+    static void state(String out, String classesFile, List<String> tests) throws Exception {
+        List<String> classes = new ArrayList<String>();
+        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(classesFile), "UTF-8"));
+        for (String l; (l = br.readLine()) != null; ) if (l.trim().length() > 0) classes.add(l.trim());
+        br.close();
+        // initialise the classes first so a clean snapshot and a polluted one see the same set
+        List<Class<?>> loaded = new ArrayList<Class<?>>();
+        List<String> missing = new ArrayList<String>();
+        for (String cn : classes) {
+            try {
+                loaded.add(Class.forName(cn, true, OrderRunner.class.getClassLoader()));
+            } catch (Throwable e) {
+                missing.add(cn);
+            }
+        }
+        StringBuilder sb = runTests(tests);
+        TreeMap<String, String> snap = new TreeMap<String, String>();
+        for (Class<?> c : loaded) snapshot(c, snap);
+        Properties props = System.getProperties();
+        for (String k : props.stringPropertyNames()) snap.put("System.property:" + k, cut(props.getProperty(k), MAX_REPR));
+        snap.put("Locale.default", String.valueOf(java.util.Locale.getDefault()));
+        snap.put("TimeZone.default", java.util.TimeZone.getDefault().getID());
+        sb.append(",\"state\":{");
+        boolean first = true;
+        for (Map.Entry<String, String> e : snap.entrySet()) {
+            if (!first) sb.append(',');
+            first = false;
+            sb.append(q(e.getKey())).append(':').append(q(e.getValue()));
+        }
+        sb.append("},\"missing\":[");
+        for (int i = 0; i < missing.size(); i++) sb.append(i > 0 ? "," : "").append(q(missing.get(i)));
         sb.append("]}");
         Writer w = new OutputStreamWriter(new FileOutputStream(out), "UTF-8");
         w.write(sb.toString());
         w.close();
+    }
+
+    static void snapshot(Class<?> c, Map<String, String> snap) {
+        Field[] fs;
+        try {
+            fs = c.getDeclaredFields();
+        } catch (Throwable e) {
+            return;
+        }
+        for (Field f : fs) {
+            int mod = f.getModifiers();
+            if (!Modifier.isStatic(mod) || f.isSynthetic()) continue;
+            // compile-time constants cannot change
+            if (Modifier.isFinal(mod) && (f.getType().isPrimitive() || f.getType() == String.class)) continue;
+            String key = c.getName() + "." + f.getName();
+            try {
+                f.setAccessible(true);
+                snap.put(key, cut(repr(f.get(null), 0, new IdentityHashMap<Object, Boolean>()), MAX_REPR));
+            } catch (Throwable e) {
+                snap.put(key, "<inaccessible: " + e.getClass().getSimpleName() + ">");
+            }
+        }
+    }
+
+    /** A JVM-independent description of a value (no identity hash codes). */
+    static String repr(Object v, int depth, IdentityHashMap<Object, Boolean> seen) {
+        if (v == null) return "null";
+        Class<?> c = v.getClass();
+        if (v instanceof String) return q((String) v);
+        if (v instanceof Number || v instanceof Boolean || v instanceof Character || c.isEnum()) return String.valueOf(v);
+        if (v instanceof Class) return "class " + ((Class<?>) v).getName();
+        if (seen.containsKey(v)) return "<cycle>";
+        seen.put(v, Boolean.TRUE);
+        try {
+            if (c.isArray()) {
+                int n = Array.getLength(v);
+                StringBuilder b = new StringBuilder(c.getComponentType().getSimpleName() + "[" + n + "]{");
+                for (int i = 0; i < Math.min(n, MAX_ELEMS); i++) b.append(i > 0 ? "," : "").append(depth < MAX_DEPTH ? repr(Array.get(v, i), depth + 1, seen) : "..");
+                return b.append(n > MAX_ELEMS ? ",..}" : "}").toString();
+            }
+            if (v instanceof Map) {
+                Map<?, ?> m = (Map<?, ?>) v;
+                StringBuilder b = new StringBuilder(c.getSimpleName() + "(size=" + m.size() + "){");
+                int i = 0;
+                for (Iterator<? extends Map.Entry<?, ?>> it = m.entrySet().iterator(); it.hasNext() && i < MAX_ELEMS; i++) {
+                    Map.Entry<?, ?> e = it.next();
+                    b.append(i > 0 ? "," : "").append(depth < MAX_DEPTH ? repr(e.getKey(), depth + 1, seen) + "=" + repr(e.getValue(), depth + 1, seen) : "..");
+                }
+                return b.append(m.size() > MAX_ELEMS ? ",..}" : "}").toString();
+            }
+            if (v instanceof Collection) {
+                Collection<?> col = (Collection<?>) v;
+                StringBuilder b = new StringBuilder(c.getSimpleName() + "(size=" + col.size() + "){");
+                int i = 0;
+                for (Iterator<?> it = col.iterator(); it.hasNext() && i < MAX_ELEMS; i++)
+                    b.append(i > 0 ? "," : "").append(depth < MAX_DEPTH ? repr(it.next(), depth + 1, seen) : "..");
+                return b.append(col.size() > MAX_ELEMS ? ",..}" : "}").toString();
+            }
+            if (v instanceof ThreadLocal) return "ThreadLocal{" + repr(((ThreadLocal<?>) v).get(), depth + 1, seen) + "}";
+            if (v instanceof java.util.concurrent.atomic.AtomicInteger || v instanceof java.util.concurrent.atomic.AtomicLong
+                || v instanceof java.util.concurrent.atomic.AtomicBoolean || v instanceof java.util.concurrent.atomic.AtomicReference)
+                return c.getSimpleName() + "{" + v + "}";
+            // other objects: their own instance fields, one level deep
+            if (depth >= MAX_DEPTH) return c.getName();
+            StringBuilder b = new StringBuilder(c.getName() + "{");
+            int i = 0;
+            for (Class<?> k = c; k != null && k != Object.class && i < MAX_ELEMS; k = k.getSuperclass()) {
+                for (Field f : k.getDeclaredFields()) {
+                    if (Modifier.isStatic(f.getModifiers()) || f.isSynthetic() || i >= MAX_ELEMS) continue;
+                    try {
+                        f.setAccessible(true);
+                        b.append(i++ > 0 ? "," : "").append(f.getName()).append('=').append(repr(f.get(v), depth + 1, seen));
+                    } catch (Throwable e) {
+                        b.append(i++ > 0 ? "," : "").append(f.getName()).append("=?");
+                    }
+                }
+            }
+            return b.append('}').toString();
+        } finally {
+            seen.remove(v);
+        }
     }
 
     static boolean isJupiter(Class<?> c, String m) {
