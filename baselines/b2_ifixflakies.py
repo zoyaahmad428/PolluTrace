@@ -86,6 +86,27 @@ def use_docker():
     return _DOCKER
 
 
+def _mvn_cmd(proj, args):
+    m = proj.mod()
+    if use_docker():
+        return ["docker", "run", "--rm", "-v", f"{proj.root}:/w", "-v", f"{Path.home() / '.m2'}:/root/.m2",
+                "-w", "/w", IMAGES[m["jdk"]], "mvn", "-B"] + args, {}
+    return [env.mvn_bin(m["maven"]), "-B"] + args, {"cwd": proj.root, "env": env.toolchain_env(m["jdk"])}
+
+
+def ensure_surefire_reports(proj, timeout):
+    """iFixFlakies takes the original test order from surefire reports of a normal `mvn test` run.
+    Our builds skip tests, so run the module's suite once (failures ignored) before iFixFlakies."""
+    rep = proj.mdir / "target" / "surefire-reports"
+    if rep.exists() and any(rep.glob("*.xml")):
+        return True, 0.0
+    pl = [] if proj.module == "." else ["-pl", proj.module]
+    cmd, kw = _mvn_cmd(proj, ["test"] + pl + SKIP_FLAGS[1:] + ["-Dmaven.test.failure.ignore=true",
+                                                               "-DfailIfNoTests=false"])
+    r = env.run(cmd, timeout=timeout, log=env.WORK / "logs" / f"b2_{proj.root.name}.log", **kw)
+    return rep.exists() and any(rep.glob("*.xml")), r.secs
+
+
 def run_victim(proj, victim, timeout):
     m = proj.mod()
     dotted = victim.replace("#", ".")
@@ -154,6 +175,9 @@ def main():
             shutil.copy(pom, backup)
             try:
                 add_plugin(pom)
+                ok_rep, rep_secs = ensure_surefire_reports(proj, a.timeout * 60)
+                print(f"  surefire reports for {proj.root.name}/{proj.module}: "
+                      f"{'ok' if ok_rep else 'missing'} ({rep_secs:.0f} s)", flush=True)
                 for r in vs:
                     t0 = time.time()
                     res, status = run_victim(proj, r["victim"], a.timeout * 60)
