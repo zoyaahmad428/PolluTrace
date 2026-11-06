@@ -57,7 +57,10 @@ def random_orders(proj, victim, polluters, n, seed=0, extra=POOL_EXTRA, stop_on_
 
 
 ASSERT_RE = re.compile(r"\b(assert\w*|fail|verify|expect\w*)\s*\(")
-SKIP_RE = re.compile(r"@(Ignore|Disabled)\b|Assume\.|assume\w*\s*\(")
+SKIP_RE = re.compile(r"@(?:[\w.]*\.)?(Ignore|Disabled)\b|Assume\.|assume\w*\s*\(")
+SWALLOW_RE = re.compile(r"catch\s*\(\s*(?:final\s+)?(?:[\w.]+\s*\|\s*)*(?:java\.lang\.)?"
+                        r"(Throwable|Exception|Error|AssertionError|AssertionFailedError|RuntimeException)\s+\w+\s*\)"
+                        r"\s*\{\s*(?:return\s*;\s*)?\}")
 
 
 def integrity(original_src, patched_src, method):
@@ -69,6 +72,10 @@ def integrity(original_src, patched_src, method):
         issues.append("fewer assertions")
     if len(SKIP_RE.findall(patched_src)) > len(SKIP_RE.findall(original_src)):
         issues.append("adds ignore/disable/assume")
+    if len(SWALLOW_RE.findall(patched_src)) > len(SWALLOW_RE.findall(original_src)):
+        issues.append("swallows exceptions/assertion errors")
+    if method is None:  # a non-victim file (e.g. the polluter's class): no method-level checks
+        return {"ok": not issues, "issues": issues}
     if not re.search(r"\b" + re.escape(method) + r"\s*\(", patched_src):
         issues.append("victim method removed or renamed")
     body = _method_body(patched_src, method)
