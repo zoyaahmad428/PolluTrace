@@ -1,5 +1,17 @@
 \begin{table*}[t]
 \centering
-\caption{E4-G1: localization cost.}\label{tab:g1}
-\textit{results not yet generated: run python paper/make\_tables.py}
+\footnotesize
+\caption{E4-G1: cost of finding the polluter in the failing order (same orders and run budget).}
+\label{tab:g1}
+\begin{tabular}{lrrrrr}
+\toprule
+\textbf{Strategy} & \textbf{Trials} & \textbf{Known polluter found} & \textbf{Runs (mean)} & \textbf{Runs (median)} & \textbf{Test executions} \\
+\midrule
+Ranked + LLM (PolluTrace) & 12 & 92\% & 2.1 & 1 & 5 \\
+Ranked, static only & 12 & 92\% & 1.8 & 2 & 4 \\
+One-by-one (iDFlakies-style) & 12 & 92\% & 20.0 & 20 & 40 \\
+Delta debugging (iFixFlakies-style) & 12 & 100\% & 9.2 & 8 & 60 \\
+Random order & 12 & 92\% & 11.4 & 10 & 23 \\
+\bottomrule
+\end{tabular}
 \end{table*}

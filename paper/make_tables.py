@@ -2,6 +2,7 @@
 number in the paper comes from the repository.
 
     python paper/make_tables.py          # after eval/stats.py and eval/failure_analysis.py
+    python paper/make_tables.py --addressed G1=Partially,G2=Not,G3=Fully   # fills "Addressed?"
 
 Tables: main.tex (E1/E2/E3/E5), g1.tex (E4-G1), g2.tex (E4-G2), g3.tex (E4-G3),
 gap.tex (gap-resolution table), efficiency.tex (E6), failures.tex (failure categories).
@@ -36,7 +37,7 @@ def table(name, caption, label, header, rows, colspec=None, wide=False, note=Non
              f"\\label{{{label}}}", f"\\begin{{tabular}}{{{colspec}}}", "\\toprule",
              " & ".join(f"\\textbf{{{tex(h)}}}" for h in header) + " \\\\", "\\midrule"]
     if rows:
-        lines += [" & ".join(tex(c) for c in r) + " \\\\" for r in rows]
+        lines += [" & ".join(c if str(c).startswith("\\todo") else tex(c) for c in r) + " \\\\" for r in rows]
     else:
         lines.append(f"\\multicolumn{{{len(header)}}}{{c}}{{\\textit{{results not yet generated}}}} \\\\")
     lines += ["\\bottomrule", "\\end{tabular}"]
@@ -108,6 +109,15 @@ def g3_rows():
     return out
 
 
+# Fill the "Addressed?" column once the group has judged each gap, e.g.
+#   python paper/make_tables.py --addressed G1=Partially,G2=Not,G3=Fully
+ADDRESSED = {}
+
+
+def addressed(g):
+    return ADDRESSED.get(g, "\\todo{}")
+
+
 def gap_rows(data):
     def fr(s):
         return stats.ms([stats.run_metrics(r)["fix_rate"] for r in data[s].values()], True) if s in data else "–"
@@ -120,10 +130,10 @@ def gap_rows(data):
         v = [stats.num(r["runs"]) for r in loc if r["strategy"] == s]
         return f"{st.mean(v):.1f}" if v else "–"
     return [["G1", "Localizer", "Order runs to find polluter", f"{runs('bisect')} (delta debugging)",
-             f"{runs('ranked_llm')}", "\\todo{}"],
-            ["G1", "Localizer (ablation A1)", "Fix rate", fr("B4"), f"{fr('PolluTrace')} vs {fr('A1_no_localizer')} w/o", "\\todo{}"],
-            ["G2", "State diff (ablation A2)", "Fix rate", fr("B4"), f"{fr('PolluTrace')} vs {fr('A2_no_statediff')} w/o", "\\todo{}"],
-            ["G3", "Validator (ablation A3)", "False-fix rate", ffr("B4"), f"{ffr('PolluTrace')} vs {ffr('A3_no_validator')} weak", "\\todo{}"]]
+             f"{runs('ranked_llm')}", addressed("G1")],
+            ["G1", "Localizer (ablation A1)", "Fix rate", fr("B4"), f"{fr('PolluTrace')} vs {fr('A1_no_localizer')} w/o", addressed("G1")],
+            ["G2", "State diff (ablation A2)", "Fix rate", fr("B4"), f"{fr('PolluTrace')} vs {fr('A2_no_statediff')} w/o", addressed("G2")],
+            ["G3", "Validator (ablation A3)", "False-fix rate", ffr("B4"), f"{ffr('PolluTrace')} vs {ffr('A3_no_validator')} weak", addressed("G3")]]
 
 
 def eff_rows(data):
@@ -153,6 +163,9 @@ def failure_rows():
 
 
 def main():
+    if "--addressed" in sys.argv:
+        spec = sys.argv[sys.argv.index("--addressed") + 1]
+        ADDRESSED.update(kv.split("=", 1) for kv in spec.split(",") if "=" in kv)
     data = stats.load_runs()
     table("main", "Repair results on the test subset (mean $\\pm$ std over runs).", "tab:main",
           ["System", "Runs", "Victims", "Fixed", "Fix rate", "Precision", "False-fix rate"], main_rows(data),

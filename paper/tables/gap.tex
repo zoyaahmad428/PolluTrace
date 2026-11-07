@@ -1,5 +1,16 @@
 \begin{table*}[t]
 \centering
-\caption{Gap-resolution table.}\label{tab:gap}
-\textit{results not yet generated: run python paper/make\_tables.py}
+\footnotesize
+\caption{Gap-resolution table.}
+\label{tab:gap}
+\begin{tabular}{lllrrl}
+\toprule
+\textbf{Gap} & \textbf{Component} & \textbf{Metric} & \textbf{Base paper (B4, ours)} & \textbf{PolluTrace} & \textbf{Addressed?} \\
+\midrule
+G1 & Localizer & Order runs to find polluter & 9.2 (delta debugging) & 2.1 & Partially \\
+G1 & Localizer (ablation A1) & Fix rate & 58.3\% & 58.3\% vs 50.0\% w/o & Partially \\
+G2 & State diff (ablation A2) & Fix rate & 58.3\% & 58.3\% vs 58.3\% w/o & Not \\
+G3 & Validator (ablation A3) & False-fix rate & 0.0\% & 0.0\% vs 12.5\% weak & Fully \\
+\bottomrule
+\end{tabular}
 \end{table*}

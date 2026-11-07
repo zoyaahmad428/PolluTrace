@@ -1,5 +1,20 @@
 \begin{table*}[t]
 \centering
-\caption{Failure categories.}\label{tab:fail}
-\textit{results not yet generated: run python paper/make\_tables.py}
+\footnotesize
+\caption{Failure categories per system (counts over all runs).}
+\label{tab:fail}
+\begin{tabular}{lrrrrrr}
+\toprule
+\textbf{Category} & \textbf{A1\_no\_localizer} & \textbf{A2\_no\_statediff} & \textbf{A3\_no\_validator} & \textbf{B1} & \textbf{B4} & \textbf{PolluTrace} \\
+\midrule
+wrong\_polluter & 0 & 1 & 0 & 0 & 0 & 1 \\
+compile\_errors & 1 & 3 & 1 & 2 & 2 & 1 \\
+integrity\_rejected & 3 & 0 & 0 & 0 & 0 & 2 \\
+still\_failing & 2 & 1 & 3 & 0 & 3 & 1 \\
+false\_fix & 0 & 0 & 1 & 0 & 0 & 0 \\
+integrity\_final & 0 & 0 & 0 & 1 & 0 & 0 \\
+not\_fixed\_final & 0 & 0 & 0 & 5 & 0 & 0 \\
+(all results) & 12 & 12 & 12 & 12 & 12 & 12 \\
+\bottomrule
+\end{tabular}
 \end{table*}

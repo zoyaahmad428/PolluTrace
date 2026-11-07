@@ -1,5 +1,18 @@
 \begin{table*}[t]
 \centering
-\caption{E6: efficiency and reliability.}\label{tab:eff}
-\textit{results not yet generated: run python paper/make\_tables.py}
+\footnotesize
+\caption{E6: cost per victim and reliability across runs (mean $\pm$ std over runs).}
+\label{tab:eff}
+\begin{tabular}{lrrrrrrr}
+\toprule
+\textbf{System} & \textbf{LLM calls} & \textbf{Prompt tok.} & \textbf{Compl. tok.} & \textbf{USD} & \textbf{Test runs} & \textbf{Agent s} & \textbf{Same outcome} \\
+\midrule
+B1 single LLM call & 1.0 & 6113.3 & 5273.2 & 0.0150 & 0.0 & 10.3 & 12/12 \\
+B4 NIODebugger-style (base paper, ours) & 1.8 & 17867.8 & 13449.4 & 0.0390 & 10.3 & 65.9 & 12/12 \\
+PolluTrace (full) & 3.3 & 25393.9 & 17829.6 & 0.0522 & 18.3 & 100.9 & 12/12 \\
+A1 without localizer (G1) & 2.7 & 23191.2 & 18079.7 & 0.0522 & 11.6 & 70.1 & 12/12 \\
+A2 without state diff (G2) & 3.2 & 24454.4 & 18225.3 & 0.0529 & 16.2 & 71.0 & 12/12 \\
+A3 weak validator (G3) & 3.2 & 24669.4 & 17535.6 & 0.0512 & 5.6 & 58.1 & 12/12 \\
+\bottomrule
+\end{tabular}
 \end{table*}
