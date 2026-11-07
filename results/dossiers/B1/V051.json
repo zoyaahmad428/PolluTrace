@@ -1,0 +1,44 @@
+{
+  "system": "B1",
+  "victim": "cern.c2mon.server.elasticsearch.tag.config.TagConfigDocumentIndexerTests#reindexTagConfigDocuments",
+  "project": "https://github.com/c2mon/c2mon",
+  "sha": "d80687b119c713dd177a58cf53a997d8cc5ca264",
+  "module": "c2mon-server/c2mon-server-elasticsearch",
+  "failing_order": [
+    "cern.c2mon.server.elasticsearch.tag.config.TagConfigDocumentIndexerTests#addDataTag",
+    "cern.c2mon.server.elasticsearch.tag.config.TagConfigDocumentIndexerTests#reindexTagConfigDocuments"
+  ],
+  "llm": {
+    "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+    "model": "gemini-3.8-flash"
+  },
+  "runs": [
+    {
+      "order": [
+        "cern.c2mon.server.elasticsearch.tag.config.TagConfigDocumentIndexerTests#addDataTag",
+        "cern.c2mon.server.elasticsearch.tag.config.TagConfigDocumentIndexerTests#reindexTagConfigDocuments"
+      ],
+      "result": "FAIL",
+      "secs": 57.15
+    }
+  ],
+  "patches": [
+    {
+      "id": "p1",
+      "site": "victim_file",
+      "diff": "diff --git a/c2mon-server/c2mon-server-elasticsearch/src/test/java/cern/c2mon/server/elasticsearch/tag/config/TagConfigDocumentIndexerTests.java b/c2mon-server/c2mon-server-elasticsearch/src/test/java/cern/c2mon/server/elasticsearch/tag/config/TagConfigDocumentIndexerTests.java\nindex c561e1e..d9b4221 100755\n--- a/c2mon-server/c2mon-server-elasticsearch/src/test/java/cern/c2mon/server/elasticsearch/tag/config/TagConfigDocumentIndexerTests.java\n+++ b/c2mon-server/c2mon-server-elasticsearch/src/test/java/cern/c2mon/server/elasticsearch/tag/config/TagConfigDocumentIndexerTests.java\n@@ -77,9 +77,11 @@ public class TagConfigDocumentIndexerTests extends BaseElasticsearchIntegrationT\n   @Test\n   public void reindexTagConfigDocuments() throws Exception {\n     final String index = Indices.indexFor(new TagConfigDocument());\n-    //Delete the index first\n-    DeleteIndexResponse deleteResponse = client.getClient().admin().indices().prepareDelete(index).get();\n-    assertTrue(\"The index could not be deleted\", deleteResponse.isAcknowledged());\n+    //Delete the index first if it exists\n+    if (Indices.exists(index)) {\n+      DeleteIndexResponse deleteResponse = client.getClient().admin().indices().prepareDelete(index).get();\n+      assertTrue(\"The index could not be deleted\", deleteResponse.isAcknowledged());\n+    }\n     //reindex everything from the cache\n     this.indexer.reindexAllTagConfigDocuments();\n     // Refresh the index to make sure the document is searchable\n",
+      "verdict": "REJECT",
+      "failing_order_check": [
+        {
+          "polluter": "cern.c2mon.server.elasticsearch.tag.config.TagConfigDocumentIndexerTests#addDataTag",
+          "status": "FAIL",
+          "secs": 48.74
+        }
+      ],
+      "integrity": {
+        "ok": true,
+        "issues": []
+      }
+    }
+  ]
+}

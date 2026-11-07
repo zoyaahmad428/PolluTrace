@@ -1,0 +1,138 @@
+{
+  "system": "A1_no_localizer",
+  "config": {
+    "name": "no_localizer",
+    "localizer": "none",
+    "llm_rank": true,
+    "statediff": true,
+    "validator": "strict",
+    "n_loop": 20,
+    "loop_secs": 300,
+    "relocalize": false,
+    "max_iters": 4,
+    "max_llm_calls": 8,
+    "max_local_runs": 30,
+    "victim_secs": 1800,
+    "temperature": 0.2
+  },
+  "run": 1,
+  "victim": "com.github.kevinsawicki.http.HttpRequestTest#putWithMappedQueryParams",
+  "id": "V069",
+  "project": "https://github.com/kevinsawicki/http-request",
+  "sha": "2d62a3e9da726942a93cf16b6e91c0187e6c0136",
+  "module": "lib",
+  "failing_order": [
+    "com.github.kevinsawicki.http.HttpRequestTest#dateHeader",
+    "com.github.kevinsawicki.http.HttpRequestTest#getUrlEncodedWithUnicode",
+    "com.github.kevinsawicki.http.HttpRequestTest#uploadProgressSendByteArray",
+    "com.github.kevinsawicki.http.HttpRequestTest#headUrlEmpty",
+    "com.github.kevinsawicki.http.HttpRequestTest#getWithMappedQueryParams",
+    "com.github.kevinsawicki.http.HttpRequestTest#postMultipart",
+    "com.github.kevinsawicki.http.HttpRequestTest#deleteUrlEmpty",
+    "com.github.kevinsawicki.http.HttpRequestTest#getError",
+    "com.github.kevinsawicki.http.HttpRequestTest#customConnectionFactory",
+    "com.github.kevinsawicki.http.HttpRequestTest#getHeaders",
+    "com.github.kevinsawicki.http.HttpRequestTest#postMultipartWithContentType",
+    "com.github.kevinsawicki.http.HttpRequestTest#getUrlEncodedWithSpace",
+    "com.github.kevinsawicki.http.HttpRequestTest#cacheControlHeader",
+    "com.github.kevinsawicki.http.HttpRequestTest#appendOddNumberOfParams",
+    "com.github.kevinsawicki.http.EncodeTest#encodeMalformedUri",
+    "com.github.kevinsawicki.http.HttpRequestTest#getWithResponseCharsetAsSecondParam",
+    "com.github.kevinsawicki.http.HttpRequestTest#getNonEmptyString",
+    "com.github.kevinsawicki.http.HttpRequestTest#bodyOfNonEmptyErrorResponse",
+    "com.github.kevinsawicki.http.HttpRequestTest#headEmpty",
+    "com.github.kevinsawicki.http.HttpRequestTest#basicAuthentication",
+    "com.github.kevinsawicki.http.HttpRequestTest#postWithEscapedVarargsQueryParams",
+    "com.github.kevinsawicki.http.HttpRequestTest#getReaderWithCharset",
+    "com.github.kevinsawicki.http.HttpRequestTest#eTagHeader",
+    "com.github.kevinsawicki.http.HttpRequestTest#appendMappedQueryParamsWithExistingQueryStart",
+    "com.github.kevinsawicki.http.HttpRequestTest#malformedDateHeader",
+    "com.github.kevinsawicki.http.HttpRequestTest#appendListQueryParams",
+    "com.github.kevinsawicki.http.HttpRequestTest#appendMappedQueryParamsWithNoPath",
+    "com.github.kevinsawicki.http.HttpRequestTest#appendEmptyMappedQueryParams",
+    "com.github.kevinsawicki.http.HttpRequestTest#lastModifiedHeader",
+    "com.github.kevinsawicki.http.HttpRequestTest#getBufferedReader",
+    "com.github.kevinsawicki.http.HttpRequestTest#getEmptyParameter",
+    "com.github.kevinsawicki.http.HttpRequestTest#putWithMappedQueryParams"
+  ],
+  "llm": {
+    "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+    "model": "gemini-3.5-flash-lite"
+  },
+  "result": {
+    "id": "V069",
+    "project": "http-request",
+    "victim": "com.github.kevinsawicki.http.HttpRequestTest#putWithMappedQueryParams",
+    "system": "A1_no_localizer",
+    "config": "no_localizer",
+    "run": 1,
+    "temperature": 0.2,
+    "seed": 4010160613,
+    "llm_calls": 4,
+    "prompt_tokens": 63854,
+    "completion_tokens": 58851,
+    "llm_secs": 105.7,
+    "test_runs": 0,
+    "test_executions": 0,
+    "test_secs": 0.0,
+    "agent_secs": 116.1,
+    "model": "gemini-3.5-flash-lite",
+    "iterations": 4,
+    "polluter_found": "",
+    "loc_runs": 0,
+    "polluter_correct": "",
+    "target": "",
+    "stop_reason": "max iterations",
+    "detail": "",
+    "outcome": "no_patch"
+  },
+  "system_output": {
+    "polluter": null,
+    "loc_runs": 0,
+    "iterations": 4,
+    "target": "",
+    "polluters": [],
+    "attempts": [
+      {
+        "attempt": 1,
+        "target": "victim",
+        "reason": "Added a `@Before` method to reset the static `handler` field before each test, preventing pollution from previously executed tests.",
+        "diff": "diff --git a/lib/src/test/java/com/github/kevinsawicki/http/HttpRequestTest.java b/lib/src/test/java/com/github/kevinsawicki/http/HttpRequestTest.java\nindex 138976b..735163f 100644\n--- a/lib/src/test/java/com/github/kevinsawicki/http/HttpRequestTest.java\n+++ b/lib/src/test/java/com/github/kevinsawicki/http/HttpRequestTest.java\n@@ -83,6 +83,7 @@ import javax.servlet.http.HttpServletResponse;\n import org.eclipse.jetty.server.Request;\n import org.eclipse.jetty.util.B64Code;\n import org.junit.After;\n+import org.junit.Before;\n import org.junit.BeforeClass;\n import org.junit.Test;\n \n@@ -120,6 +121,14 @@ public class HttpRequestTest extends ServerTestCase {\n     });\n   }\n \n+  /**\n+   * Clear handler before each test\n+   */\n+  @Before\n+  public void setUpTest() {\n+    handler = null;\n+  }\n+\n   /**\n    * Clear handler\n    */\n@@ -1733,1965 +1742,4 @@ public class HttpRequestTest extends ServerTestCase {\n     ByteArrayOutputStream output = new ByteArrayOutputStream();\n     PrintStream stream = new PrintStream(output, true, CHARSET_UTF8);\n     assertTrue(post(url).receive(stream).ok());\n-    stream.close();\n-    assertEquals(\"content\", output.toString(CHARSET_UTF8));\n-  }\n-\n-  /**\n-   * Verify response in {@link File}\n-   *\n-   * @throws Exception\n-   */\n-  @Test\n-  public void receiveFile() throws Exception {\n-    handler = new RequestHandler() {\n-\n-      @Override\n-      public void handle(Request request, HttpServletResponse response) {\n-        response.setStatus(HTTP_OK);\n-        try {\n-          response.getWriter().print(\"content\");\n-        } catch (IOException e) {\n-          fail();\n-        }\n-      }\n-    };\n-    File output = File.createTempFile(\"output\", \".txt\");\n-    assertTrue(post(url).receive(output).ok());\n-    StringBuilder buffer = new StringBuilder();\n-    BufferedReader reader = new BufferedReader(new FileReader(output));\n-    int read;\n-    while ((read = reader.read()) != -1)\n-      buffer.append((char) read);\n-    reader.close();\n-    assertEquals(\"content\", buffer.toString());\n-  }\n-\n-  /**\n-   * Verify certificate and host helpers on HTTPS connection\n-   *\n-   * @throws Exception\n-   */\n-  @Test\n-  public void httpsTrust() throws Exception {\n-    assertNotNull(get(\"https://localhost\").trustAllCerts().trustAllHosts());\n-  }\n-\n-  /**\n-   * Verify certificate and host helpers ignore non-HTTPS connection\n-   *\n-   * @throws Exception\n-   */\n-  @Test\n-  public void httpTrust() throws Exception {\n-    assertNotNull(get(\"http://localhost\").trustAllCerts().trustAllHosts());\n-  }\n-\n-  /**\n-   * Verify hostname verifier is set and accepts all\n-   */\n-  @Test\n-  public void verifierAccepts() {\n-    HttpRequest request = get(\"https://localhost\");\n-    HttpsURLConnection connection = (HttpsURLConnection) request\n-        .getConnection();\n-    request.trustAllHosts();\n-    assertNotNull(connection.getHostnameVerifier());\n-    assertTrue(connection.getHostnameVerifier().verify(null, null));\n-  }\n-\n-  /**\n-   * Verify single hostname verifier is created across all calls\n-   */\n-  @Test\n-  public void singleVerifier() {\n-    HttpRequest request1 = get(\"https://localhost\").trustAllHosts();\n-    HttpRequest request2 = get(\"https://localhost\").trustAllHosts();\n-    assertNotNull(((HttpsURLConnection) request1.getConnection())\n-        .getHostnameVerifier());\n-    assertNotNull(((HttpsURLConnection) request2.getConnection())\n-        .getHostnameVerifier());\n-    assertEquals(\n-        ((HttpsURLConnection) request1.getConnection()).getHostnameVerifier(),\n-        ((HttpsURLConnection) request2.getConnection()).getHostnameVerifier());\n-  }\n-\n-  /**\n-   * Verify single SSL socket factory is created across all calls\n-   */\n-  @Test\n-  public void singleSslSocketFactory() {\n-    HttpRequest request1 = get(\"https://localhost\").trustAllCerts();\n-    HttpRequest request2 = get(\"https://localhost\").trustAllCerts();\n-    assertNotNull(((HttpsURLConnection) request1.getConnection())\n-        .getSSLSocketFactory());\n-    assertNotNull(((",
+        "feedback": "The file does not compile:\n[ERROR] \\Users\\zarpa\\Documents\\pollutrace-work\\work-p2\\projects\\kevinsawicki__http-request__2d62a3e9\\lib\\src\\test\\java\\com\\github\\kevinsawicki\\http\\HttpRequestTest.java:[1745,4] error: not a statement\n[ERROR] \\Users\\zarpa\\Documents\\pollutrace-work\\work-p2\\projects\\kevinsawicki__http-request__2d62a3e9\\lib\\src\\test\\java\\com\\github\\kevinsawicki\\http\\HttpRequestTest.java:[1745,6] error: reached end of file while parsing\n[ERROR] \\Users\\zarpa\\Documents\\pollutrace-work\\work-p2\\projects\\kevinsawicki__http-request__2d62a3e9\\lib\\src\\test\\java\\com\\github\\kevinsawicki\\http\\HttpRequestTest.java:[1745,4] error: not a statement\n[ERROR] \\Users\\zarpa\\Documents\\pollutrace-work\\work-p2\\projects\\kevinsawicki__http-request__2d62a3e9\\lib\\src\\test\\java\\com\\github\\kevinsawicki\\http\\HttpRequestTest.java:[1745,6] error: reached end of file while parsing",
+        "verdict": "compile_error"
+      },
+      {
+        "attempt": 2,
+        "target": "victim",
+        "reason": "Added a `@Before` method to reset the static `handler` field before each test, preventing state pollution from previously executed tests.",
+        "diff": "diff --git a/lib/src/test/java/com/github/kevinsawicki/http/HttpRequestTest.java b/lib/src/test/java/com/github/kevinsawicki/http/HttpRequestTest.java\nindex 138976b..0484d5b 100644\n--- a/lib/src/test/java/com/github/kevinsawicki/http/HttpRequestTest.java\n+++ b/lib/src/test/java/com/github/kevinsawicki/http/HttpRequestTest.java\n@@ -83,6 +83,7 @@ import javax.servlet.http.HttpServletResponse;\n import org.eclipse.jetty.server.Request;\n import org.eclipse.jetty.util.B64Code;\n import org.junit.After;\n+import org.junit.Before;\n import org.junit.BeforeClass;\n import org.junit.Test;\n \n@@ -120,6 +121,14 @@ public class HttpRequestTest extends ServerTestCase {\n     });\n   }\n \n+  /**\n+   * Clear handler before each test\n+   */\n+  @Before\n+  public void setUpTest() {\n+    handler = null;\n+  }\n+\n   /**\n    * Clear handler\n    */\n@@ -1768,1930 +1777,25 @@ public class HttpRequestTest extends ServerTestCase {\n   }\n \n   /**\n-   * Verify certificate and host helpers on HTTPS connection\n-   *\n-   * @throws Exception\n-   */\n-  @Test\n-  public void httpsTrust() throws Exception {\n-    assertNotNull(get(\"https://localhost\").trustAllCerts().trustAllHosts());\n-  }\n-\n-  /**\n-   * Verify certificate and host helpers ignore non-HTTPS connection\n-   *\n-   * @throws Exception\n-   */\n-  @Test\n-  public void httpTrust() throws Exception {\n-    assertNotNull(get(\"http://localhost\").trustAllCerts().trustAllHosts());\n-  }\n-\n-  /**\n-   * Verify hostname verifier is set and accepts all\n-   */\n-  @Test\n-  public void verifierAccepts() {\n-    HttpRequest request = get(\"https://localhost\");\n-    HttpsURLConnection connection = (HttpsURLConnection) request\n-        .getConnection();\n-    request.trustAllHosts();\n-    assertNotNull(connection.getHostnameVerifier());\n-    assertTrue(connection.getHostnameVerifier().verify(null, null));\n-  }\n-\n-  /**\n-   * Verify single hostname verifier is created across all calls\n-   */\n-  @Test\n-  public void singleVerifier() {\n-    HttpRequest request1 = get(\"https://localhost\").trustAllHosts();\n-    HttpRequest request2 = get(\"https://localhost\").trustAllHosts();\n-    assertNotNull(((HttpsURLConnection) request1.getConnection())\n-        .getHostnameVerifier());\n-    assertNotNull(((HttpsURLConnection) request2.getConnection())\n-        .getHostnameVerifier());\n-    assertEquals(\n-        ((HttpsURLConnection) request1.getConnection()).getHostnameVerifier(),\n-        ((HttpsURLConnection) request2.getConnection()).getHostnameVerifier());\n-  }\n-\n-  /**\n-   * Verify single SSL socket factory is created across all calls\n-   */\n-  @Test\n-  public void singleSslSocketFactory() {\n-    HttpRequest request1 = get(\"https://localhost\").trustAllCerts();\n-    HttpRequest request2 = get(\"https://localhost\").trustAllCerts();\n-    assertNotNull(((HttpsURLConnection) request1.getConnection())\n-        .getSSLSocketFactory());\n-    assertNotNull(((HttpsURLConnection) request2.getConnection())\n-        .getSSLSocketFactory());\n-    assertEquals(\n-        ((HttpsURLConnection) request1.getConnection()).getSSLSocketFactory(),\n-        ((HttpsURLConnection) request2.getConnection()).getSSLSocketFactory());\n-  }\n-\n-  /**\n-   * Send a stream that throws an exception when read from\n-   *\n-   * @throws Exception\n-   */\n-  @Test\n-  public void sendErrorReadStream() throws Exception {\n-    handler = new RequestHandler() {\n-\n-      @Override\n-      public void handle(Request request, HttpServletResponse response) {\n-        response.setStatus(HTTP_OK);\n-        try {\n-          response.getWriter().print(\"content\");\n-        } catch (IOException e) {\n-          fail();\n-        }\n-      }\n-    };\n-    final IOException readCause = new IOException();\n-    final IOException closeCause = new IOException();\n-    InputStream stream = new InputStream() {\n-\n-      public int read() throws IOException {\n-        throw readCause;\n-      }\n-\n-      public void close() throws IOException {\n-        throw closeCause;\n-      }\n-    };\n-    try {\n-      post(url).send(st",
+        "verdict": "REJECT",
+        "reasons": [
+          "integrity"
+        ],
+        "checks": {
+          "integrity": [
+            "HttpRequestTest.java: fewer assertions"
+          ]
+        }
+      }
+    ],
+    "state_diff": {},
+    "stop_reason": "max iterations"
+  },
+  "final_patch": null,
+  "final_evaluation": {},
+  "usage": {
+    "llm_calls": 4,
+    "prompt_tokens": 63854,
+    "completion_tokens": 58851,
+    "llm_secs": 105.7,
+    "test_runs": 0,
+    "test_executions": 0,
+    "test_secs": 0.0,
+    "compiles": 2,
+    "wall_secs": 116.1,
+    "steps": 18
+  },
+  "trajectory": "logs\\trajectories\\E5\\A1_no_localizer\\run1\\V069.jsonl"
+}

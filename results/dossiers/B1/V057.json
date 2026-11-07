@@ -1,0 +1,87 @@
+{
+  "system": "B1",
+  "victim": "io.github.jhipster.registry.web.rest.AccountResourceTest#testGetUnknownAccount",
+  "project": "https://github.com/jhipster/jhipster-registry",
+  "sha": "00db36611da5fc7aaf9d5372aa90f2465d80c0c4",
+  "module": ".",
+  "failing_order": [
+    "io.github.jhipster.registry.web.rest.errors.ExceptionTranslatorTest#processAccessDeniedExceptionTest",
+    "io.github.jhipster.registry.web.rest.AccountResourceTest#testGetUnknownAccount"
+  ],
+  "llm": {
+    "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+    "model": "gemini-3.6-flash"
+  },
+  "runs": [
+    {
+      "order": [
+        "io.github.jhipster.registry.web.rest.errors.ExceptionTranslatorTest#processAccessDeniedExceptionTest",
+        "io.github.jhipster.registry.web.rest.AccountResourceTest#testGetUnknownAccount"
+      ],
+      "result": "FAIL",
+      "secs": 26.76
+    }
+  ],
+  "patches": [
+    {
+      "id": "p1",
+      "site": "victim_file",
+      "diff": "diff --git a/src/test/java/io/github/jhipster/registry/web/rest/AccountResourceTest.java b/src/test/java/io/github/jhipster/registry/web/rest/AccountResourceTest.java\nindex d53d157..d460c02 100644\n--- a/src/test/java/io/github/jhipster/registry/web/rest/AccountResourceTest.java\n+++ b/src/test/java/io/github/jhipster/registry/web/rest/AccountResourceTest.java\n@@ -28,6 +28,7 @@ public class AccountResourceTest {\n \n     @Before\n     public void setup() {\n+        SecurityContextHolder.clearContext();\n         this.mock = MockMvcBuilders.standaloneSetup(new AccountResource()).build();\n     }\n \n",
+      "verdict": "ACCEPT",
+      "failing_order_check": [
+        {
+          "polluter": "io.github.jhipster.registry.web.rest.errors.ExceptionTranslatorTest#processAccessDeniedExceptionTest",
+          "status": "PASS",
+          "secs": 6.27
+        },
+        {
+          "polluter": "io.github.jhipster.registry.web.rest.errors.ExceptionTranslatorTest#processParameterizedValidationErrorTest",
+          "status": "PASS",
+          "secs": 6.08
+        }
+      ],
+      "integrity": {
+        "ok": true,
+        "issues": []
+      }
+    }
+  ],
+  "validation": {
+    "n": 100,
+    "n_run": 23,
+    "budget_hit": true,
+    "pool_size": 23,
+    "passes": 23,
+    "fails": 0,
+    "errors": 0,
+    "first_fail_index": null,
+    "order_secs": [
+      55.55,
+      55.25,
+      45.8,
+      45.73,
+      45.22,
+      54.4,
+      62.03,
+      39.05,
+      44.12,
+      48.26,
+      45.37,
+      43.51,
+      34.29,
+      33.34,
+      33.64,
+      30.4,
+      30.16,
+      26.47,
+      25.12,
+      26.18,
+      25.33,
+      26.64,
+      25.72
+    ],
+    "fail_indices": [],
+    "total_secs": 902.7,
+    "mean_order_secs": 39.2
+  }
+}

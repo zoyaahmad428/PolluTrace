@@ -1,0 +1,49 @@
+{
+  "system": "B1",
+  "victim": "org.apache.struts2.portlet.dispatcher.Jsr168DispatcherTest#testRender_ok",
+  "project": "https://github.com/Apache/Struts",
+  "sha": "13d9053050c9e4fb2ef049db6a37d3f6eebf48fa",
+  "module": "plugins/portlet",
+  "failing_order": [
+    "org.apache.struts2.portlet.dispatcher.Jsr286DispatcherTest#testModeChangeUsingPortletWidgets",
+    "org.apache.struts2.portlet.dispatcher.Jsr168DispatcherTest#testRender_ok"
+  ],
+  "llm": {
+    "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+    "model": "gemini-3.6-flash"
+  },
+  "runs": [
+    {
+      "order": [
+        "org.apache.struts2.portlet.dispatcher.Jsr286DispatcherTest#testModeChangeUsingPortletWidgets",
+        "org.apache.struts2.portlet.dispatcher.Jsr168DispatcherTest#testRender_ok"
+      ],
+      "result": "FAIL",
+      "secs": 4.41
+    }
+  ],
+  "patches": [
+    {
+      "id": "p1",
+      "site": "victim_file",
+      "diff": "diff --git a/plugins/portlet/src/test/java/org/apache/struts2/portlet/dispatcher/Jsr168DispatcherTest.java b/plugins/portlet/src/test/java/org/apache/struts2/portlet/dispatcher/Jsr168DispatcherTest.java\nindex ef0c5c0..a11fc9d 100644\n--- a/plugins/portlet/src/test/java/org/apache/struts2/portlet/dispatcher/Jsr168DispatcherTest.java\n+++ b/plugins/portlet/src/test/java/org/apache/struts2/portlet/dispatcher/Jsr168DispatcherTest.java\n@@ -24,6 +24,7 @@ import com.opensymphony.xwork2.ActionProxy;\n import com.opensymphony.xwork2.ActionProxyFactory;\r\n import com.opensymphony.xwork2.util.ValueStack;\r\n import org.apache.struts2.StrutsConstants;\r\n+import org.apache.struts2.dispatcher.Dispatcher;\r\n import org.apache.struts2.dispatcher.mapper.ActionMapping;\r\n import static org.apache.struts2.portlet.PortletConstants.*;\r\n import org.easymock.EasyMock;\r\n@@ -63,10 +64,20 @@ public class Jsr168DispatcherTest extends MockObjectTestCase {\n     Mock mockAction = null;\r\n     Mock mockInvocation = null;\r\n \r\n-    public void setUp() {\r\n+    public void setUp() throws Exception {\r\n+        super.setUp();\r\n+        Dispatcher.setInstance(null);\r\n         dispatcher = new Jsr168Dispatcher();\r\n     }\r\n \r\n+    protected void tearDown() throws Exception {\r\n+        if (dispatcher != null) {\r\n+            dispatcher.destroy();\r\n+        }\r\n+        Dispatcher.setInstance(null);\r\n+        super.tearDown();\r\n+    }\r\n+\r\n     private void initPortletConfig(final Map<String, String> initParams, final Map<String, Object> attributes) {\r\n         mockConfig = mock(PortletConfig.class);\r\n         mockCtx = mock(PortletContext.class);\r\n",
+      "verdict": "REJECT",
+      "failing_order_check": [
+        {
+          "polluter": "org.apache.struts2.portlet.dispatcher.Jsr286DispatcherTest#testModeChangeUsingPortletWidgets",
+          "status": "FAIL",
+          "secs": 1.36
+        },
+        {
+          "polluter": "org.apache.struts2.portlet.dispatcher.Jsr286DispatcherTest#testRender_ok",
+          "status": "PASS",
+          "secs": 1.23
+        }
+      ],
+      "integrity": {
+        "ok": true,
+        "issues": []
+      }
+    }
+  ]
+}

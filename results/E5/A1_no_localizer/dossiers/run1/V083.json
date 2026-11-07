@@ -1,0 +1,153 @@
+{
+  "system": "A1_no_localizer",
+  "config": {
+    "name": "no_localizer",
+    "localizer": "none",
+    "llm_rank": true,
+    "statediff": true,
+    "validator": "strict",
+    "n_loop": 20,
+    "loop_secs": 300,
+    "relocalize": false,
+    "max_iters": 4,
+    "max_llm_calls": 8,
+    "max_local_runs": 30,
+    "victim_secs": 1800,
+    "temperature": 0.2
+  },
+  "run": 1,
+  "victim": "net.sf.marineapi.ais.parser.AISMessageFactoryTest#testCreateWithIncorrectOrder",
+  "id": "V083",
+  "project": "https://github.com/ktuukkan/marine-api",
+  "sha": "af0003847db9ba822f67d4f1dceb8de3fe63250a",
+  "module": ".",
+  "failing_order": [
+    "net.sf.marineapi.nmea.parser.TTMTest#testSetDistance",
+    "net.sf.marineapi.nmea.parser.RPMTest#testSetId",
+    "net.sf.marineapi.nmea.parser.RMCTest#testGetMagneticVariation",
+    "net.sf.marineapi.nmea.parser.HTDTest#testGetCommandedRateOfTurnForHeadingChanges",
+    "net.sf.marineapi.nmea.parser.VTGTest#testSetSpeedKnotsWithNegativeValue",
+    "net.sf.marineapi.nmea.util.PositionTest#testGetLatitude",
+    "net.sf.marineapi.nmea.parser.VDRTest#testSetSpeed",
+    "net.sf.marineapi.ais.event.AbstractAISMessageListenerTest#testGenericsListenerDefaultConstructorThrows",
+    "net.sf.marineapi.ais.parser.AISMessageParserTest#testAppendEmptyString",
+    "net.sf.marineapi.nmea.parser.TTMTest#testSetName",
+    "net.sf.marineapi.nmea.parser.DTMTest#testSetLongitudeOffset",
+    "net.sf.marineapi.nmea.parser.MWVTest#testGetSpeedUnit",
+    "net.sf.marineapi.nmea.parser.XTETest#testGetMode",
+    "net.sf.marineapi.nmea.parser.GBSTest#getProbability",
+    "net.sf.marineapi.nmea.parser.RMBTest#testSetSteerToWithNull",
+    "net.sf.marineapi.ais.parser.AISMessage24ParserTest#getSerialNumber",
+    "net.sf.marineapi.nmea.parser.SentenceFactoryTest#testRegisterParserWithAlternativeBeginChar",
+    "net.sf.marineapi.nmea.util.TimeTest#testSetMinutes",
+    "net.sf.marineapi.ais.util.Longitude28Test#maxValueIsCorrect",
+    "net.sf.marineapi.nmea.parser.MWVTest#testSetNegativeSpeed",
+    "net.sf.marineapi.nmea.parser.GGATest#testGetNumberOfSatellites",
+    "net.sf.marineapi.nmea.parser.TTMTest#testSetAcquisitionType",
+    "net.sf.marineapi.nmea.parser.BODTest#testGetTrueBearing",
+    "net.sf.marineapi.ais.parser.AISMessage21ParserTest#getAidType",
+    "net.sf.marineapi.nmea.util.TimeTest#testSetNegativeHour",
+    "net.sf.marineapi.nmea.parser.MTWTest#testMTWParserTalkerId",
+    "net.sf.marineapi.nmea.parser.RTETest#testSetRouteId",
+    "net.sf.marineapi.nmea.parser.RTETest#testAddWaypointId",
+    "net.sf.marineapi.nmea.parser.GGATest#testSetHorizontalDOP",
+    "net.sf.marineapi.nmea.parser.VBWTest#testGetTravGroundSpeed",
+    "net.sf.marineapi.ais.parser.AISMessage24ParserTest#getPartNumber",
+    "net.sf.marineapi.ais.parser.AISMessageFactoryTest#testCreateWithIncorrectOrder"
+  ],
+  "llm": {
+    "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+    "model": "gemini-3.5-flash-lite"
+  },
+  "result": {
+    "id": "V083",
+    "project": "marine-api",
+    "victim": "net.sf.marineapi.ais.parser.AISMessageFactoryTest#testCreateWithIncorrectOrder",
+    "system": "A1_no_localizer",
+    "config": "no_localizer",
+    "run": 1,
+    "temperature": 0.2,
+    "seed": 1508546155,
+    "llm_calls": 4,
+    "prompt_tokens": 13802,
+    "completion_tokens": 2959,
+    "llm_secs": 11.9,
+    "test_runs": 1,
+    "test_executions": 32,
+    "test_secs": 0.5,
+    "agent_secs": 37.7,
+    "model": "gemini-3.5-flash-lite",
+    "iterations": 4,
+    "polluter_found": "",
+    "loc_runs": 0,
+    "polluter_correct": "",
+    "target": "",
+    "stop_reason": "max iterations",
+    "detail": "",
+    "outcome": "no_patch"
+  },
+  "system_output": {
+    "polluter": null,
+    "loc_runs": 0,
+    "iterations": 4,
+    "target": "",
+    "polluters": [],
+    "attempts": [
+      {
+        "attempt": 1,
+        "target": "victim",
+        "reason": "The failure was caused by other tests modifying global SentenceFactory state or parsers (such as unregistering VDM); initializing SentenceFactory parsers lazily or ensuring the VDM parser is registered before test instantiation prevents the UnsupportedSentenceException.",
+        "diff": "",
+        "verdict": "REJECT",
+        "reasons": [
+          "still fails in failing order"
+        ],
+        "checks": {
+          "integrity": "ok",
+          "failing_order": "FAIL"
+        }
+      },
+      {
+        "attempt": 2,
+        "target": "victim",
+        "reason": "Initializing the VDM sentence parser and test sentences in a @Before method ensures the required parser is registered and ready even if preceding tests unregister it.",
+        "diff": "diff --git a/src/test/java/net/sf/marineapi/ais/parser/AISMessageFactoryTest.java b/src/test/java/net/sf/marineapi/ais/parser/AISMessageFactoryTest.java\nindex e6fc942..f2ec6cf 100644\n--- a/src/test/java/net/sf/marineapi/ais/parser/AISMessageFactoryTest.java\n+++ b/src/test/java/net/sf/marineapi/ais/parser/AISMessageFactoryTest.java\n@@ -6,6 +6,7 @@ import net.sf.marineapi.ais.message.AISMessage05;\n import net.sf.marineapi.nmea.parser.SentenceFactory;\n import net.sf.marineapi.nmea.sentence.AISSentence;\n \n+import org.junit.Before;\n import org.junit.Test;\n import static org.junit.Assert.*;\n \n@@ -21,9 +22,21 @@ public class AISMessageFactoryTest {\n     private String s2_1 = \"!AIVDM,2,1,9,B,53nFBv01SJ<thHp6220H4heHTf2222222222221?50:454o<`9QSlUDp,0*09\";\n     private String s2_2 = \"!AIVDM,2,2,9,B,888888888888880,2*2E\";\n \n-    private final AISSentence single = (AISSentence) sf.createParser(s1);\n-    private final AISSentence split1 = (AISSentence) sf.createParser(s2_1);\n-    private final AISSentence split2 = (AISSentence) sf.createParser(s2_2);\n+    private AISSentence single;\n+    private AISSentence split1;\n+    private AISSentence split2;\n+\n+    @Before\n+    public void setUp() {\n+        try {\n+            sf.registerParser(\"VDM\", net.sf.marineapi.ais.parser.VDMParser.class);\n+        } catch (Exception e) {\n+            // Already registered or similar\n+        }\n+        single = (AISSentence) sf.createParser(s1);\n+        split1 = (AISSentence) sf.createParser(s2_1);\n+        split2 = (AISSentence) sf.createParser(s2_2);\n+    }\n \n     @Test\n     public void testCreate() {\n",
+        "feedback": "The file does not compile:\n[ERROR] /C:/Users/zarpa/Documents/pollutrace-work/work-p2/projects/ktuukkan__marine-api__af000384/src/test/java/net/sf/marineapi/ais/parser/AISMessageFactoryTest.java:[32,65] cannot find symbol\n[ERROR] /C:/Users/zarpa/Documents/pollutrace-work/work-p2/projects/ktuukkan__marine-api__af000384/src/test/java/net/sf/marineapi/ais/parser/AISMessageFactoryTest.java:[32,65] cannot find symbol",
+        "verdict": "compile_error"
+      },
+      {
+        "attempt": 3,
+        "target": "victim",
+        "reason": "Initializing the test sentences in a `@Before` method and ensuring the VDM parser is registered protects against preceding tests that alter SentenceFactory state.",
+        "diff": "diff --git a/src/test/java/net/sf/marineapi/ais/parser/AISMessageFactoryTest.java b/src/test/java/net/sf/marineapi/ais/parser/AISMessageFactoryTest.java\nindex e6fc942..d088e76 100644\n--- a/src/test/java/net/sf/marineapi/ais/parser/AISMessageFactoryTest.java\n+++ b/src/test/java/net/sf/marineapi/ais/parser/AISMessageFactoryTest.java\n@@ -6,6 +6,7 @@ import net.sf.marineapi.ais.message.AISMessage05;\n import net.sf.marineapi.nmea.parser.SentenceFactory;\n import net.sf.marineapi.nmea.sentence.AISSentence;\n \n+import org.junit.Before;\n import org.junit.Test;\n import static org.junit.Assert.*;\n \n@@ -17,13 +18,25 @@ public class AISMessageFactoryTest {\n     private final SentenceFactory sf = SentenceFactory.getInstance();\n     private final AISMessageFactory amf = AISMessageFactory.getInstance();\n \n-    private String s1 = \"!AIVDM,1,1,,A,13aEOK?P00PD2wVMdLDRhgvL289?,0*26\";\n-    private String s2_1 = \"!AIVDM,2,1,9,B,53nFBv01SJ<thHp6220H4heHTf2222222222221?50:454o<`9QSlUDp,0*09\";\n-    private String s2_2 = \"!AIVDM,2,2,9,B,888888888888880,2*2E\";\n+    private final String s1 = \"!AIVDM,1,1,,A,13aEOK?P00PD2wVMdLDRhgvL289?,0*26\";\n+    private final String s2_1 = \"!AIVDM,2,1,9,B,53nFBv01SJ<thHp6220H4heHTf2222222222221?50:454o<`9QSlUDp,0*09\";\n+    private final String s2_2 = \"!AIVDM,2,2,9,B,888888888888880,2*2E\";\n \n-    private final AISSentence single = (AISSentence) sf.createParser(s1);\n-    private final AISSentence split1 = (AISSentence) sf.createParser(s2_1);\n-    private final AISSentence split2 = (AISSentence) sf.createParser(s2_2);\n+    private AISSentence single;\n+    private AISSentence split1;\n+    private AISSentence split2;\n+\n+    @Before\n+    public void setUp() {\n+        try {\n+            sf.registerParser(\"VDM\", Class.forName(\"net.sf.marineapi.ais.parser.VDMSentence\"));\n+        } catch (Exception e) {\n+            // Parser might already be registered or class name differs, ignore and try creating\n+        }\n+        single = (AISSentence) sf.createParser(s1);\n+        split1 = (AISSentence) sf.createParser(s2_1);\n+        split2 = (AISSentence) sf.createParser(s2_2);\n+    }\n \n     @Test\n     public void testCreate() {\n",
+        "feedback": "The file does not compile:\n[ERROR] /C:/Users/zarpa/Documents/pollutrace-work/work-p2/projects/ktuukkan__marine-api__af000384/src/test/java/net/sf/marineapi/ais/parser/AISMessageFactoryTest.java:[32,51] incompatible types: java.lang.Class<capture#1 of ?> cannot be converted to java.lang.Class<? extends net.sf.marineapi.nmea.parser.SentenceParser>\n[ERROR] /C:/Users/zarpa/Documents/pollutrace-work/work-p2/projects/ktuukkan__marine-api__af000384/src/test/java/net/sf/marineapi/ais/parser/AISMessageFactoryTest.java:[32,51] incompatible types: java.lang.Class<capture#1 of ?> cannot be converted to java.lang.Class<? extends net.sf.marineapi.nmea.parser.SentenceParser>",
+        "verdict": "compile_error"
+      },
+      {
+        "attempt": 4,
+        "target": "victim",
+        "reason": "Initializing sentences and ensuring the VDM parser is registered in a `@Before` method prevents other tests from interfering with the shared `SentenceFactory` state.",
+        "diff": "diff --git a/src/test/java/net/sf/marineapi/ais/parser/AISMessageFactoryTest.java b/src/test/java/net/sf/marineapi/ais/parser/AISMessageFactoryTest.java\nindex e6fc942..56e316d 100644\n--- a/src/test/java/net/sf/marineapi/ais/parser/AISMessageFactoryTest.java\n+++ b/src/test/java/net/sf/marineapi/ais/parser/AISMessageFactoryTest.java\n@@ -6,6 +6,7 @@ import net.sf.marineapi.ais.message.AISMessage05;\n import net.sf.marineapi.nmea.parser.SentenceFactory;\n import net.sf.marineapi.nmea.sentence.AISSentence;\n \n+import org.junit.Before;\n import org.junit.Test;\n import static org.junit.Assert.*;\n \n@@ -17,13 +18,25 @@ public class AISMessageFactoryTest {\n     private final SentenceFactory sf = SentenceFactory.getInstance();\n     private final AISMessageFactory amf = AISMessageFactory.getInstance();\n \n-    private String s1 = \"!AIVDM,1,1,,A,13aEOK?P00PD2wVMdLDRhgvL289?,0*26\";\n-    private String s2_1 = \"!AIVDM,2,1,9,B,53nFBv01SJ<thHp6220H4heHTf2222222222221?50:454o<`9QSlUDp,0*09\";\n-    private String s2_2 = \"!AIVDM,2,2,9,B,888888888888880,2*2E\";\n+    private final String s1 = \"!AIVDM,1,1,,A,13aEOK?P00PD2wVMdLDRhgvL289?,0*26\";\n+    private final String s2_1 = \"!AIVDM,2,1,9,B,53nFBv01SJ<thHp6220H4heHTf2222222222221?50:454o<`9QSlUDp,0*09\";\n+    private final String s2_2 = \"!AIVDM,2,2,9,B,888888888888880,2*2E\";\n \n-    private final AISSentence single = (AISSentence) sf.createParser(s1);\n-    private final AISSentence split1 = (AISSentence) sf.createParser(s2_1);\n-    private final AISSentence split2 = (AISSentence) sf.createParser(s2_2);\n+    private AISSentence single;\n+    private AISSentence split1;\n+    private AISSentence split2;\n+\n+    @Before\n+    public void setUp() {\n+        try {\n+            sf.registerParser(\"VDM\", AISParser.class);\n+        } catch (Exception e) {\n+            // Ignore if already registered or handled elsewhere\n+        }\n+        single = (AISSentence) sf.createParser(s1);\n+        split1 = (AISSentence) sf.createParser(s2_1);\n+        split2 = (AISSentence) sf.createParser(s2_2);\n+    }\n \n     @Test\n     public void testCreate() {\n",
+        "feedback": "The file does not compile:\n[ERROR] /C:/Users/zarpa/Documents/pollutrace-work/work-p2/projects/ktuukkan__marine-api__af000384/src/test/java/net/sf/marineapi/ais/parser/AISMessageFactoryTest.java:[32,38] cannot find symbol\n[ERROR] /C:/Users/zarpa/Documents/pollutrace-work/work-p2/projects/ktuukkan__marine-api__af000384/src/test/java/net/sf/marineapi/ais/parser/AISMessageFactoryTest.java:[32,38] cannot find symbol",
+        "verdict": "compile_error"
+      }
+    ],
+    "state_diff": {},
+    "stop_reason": "max iterations"
+  },
+  "final_patch": null,
+  "final_evaluation": {},
+  "usage": {
+    "llm_calls": 4,
+    "prompt_tokens": 13802,
+    "completion_tokens": 2959,
+    "llm_secs": 11.9,
+    "test_runs": 1,
+    "test_executions": 32,
+    "test_secs": 0.5,
+    "compiles": 4,
+    "wall_secs": 37.7,
+    "steps": 21
+  },
+  "trajectory": "logs\\trajectories\\E5\\A1_no_localizer\\run1\\V083.jsonl"
+}

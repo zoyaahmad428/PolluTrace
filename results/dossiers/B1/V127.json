@@ -1,0 +1,44 @@
+{
+  "system": "B1",
+  "victim": "org.jboss.as.naming.InitialContextTestCase#testRegisterURLSchemeHandler",
+  "project": "https://github.com/wildfly/wildfly",
+  "sha": "b19048b72669fc0e96665b1b125dc1fda21f5993",
+  "module": "naming",
+  "failing_order": [
+    "org.jboss.as.naming.WritableServiceBasedNamingStoreTestCase#testPermissions",
+    "org.jboss.as.naming.InitialContextTestCase#testRegisterURLSchemeHandler"
+  ],
+  "llm": {
+    "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+    "model": "gemini-3.8-flash"
+  },
+  "runs": [
+    {
+      "order": [
+        "org.jboss.as.naming.WritableServiceBasedNamingStoreTestCase#testPermissions",
+        "org.jboss.as.naming.InitialContextTestCase#testRegisterURLSchemeHandler"
+      ],
+      "result": "FAIL",
+      "secs": 10.65
+    }
+  ],
+  "patches": [
+    {
+      "id": "p1",
+      "site": "victim_file",
+      "diff": "diff --git a/naming/src/test/java/org/jboss/as/naming/InitialContextTestCase.java b/naming/src/test/java/org/jboss/as/naming/InitialContextTestCase.java\nindex 5138c19..bbf8d7f 100644\n--- a/naming/src/test/java/org/jboss/as/naming/InitialContextTestCase.java\n+++ b/naming/src/test/java/org/jboss/as/naming/InitialContextTestCase.java\n@@ -27,9 +27,11 @@ import javax.naming.NamingException;\n import javax.naming.spi.ObjectFactory;\n import java.util.Hashtable;\n \n+import org.junit.After;\n import org.junit.Assert;\n-import org.junit.Test;\n import org.junit.Before;\n+import org.junit.BeforeClass;\n+import org.junit.Test;\n \n \n /**\n@@ -37,11 +39,32 @@ import org.junit.Before;\n  */\n public class InitialContextTestCase {\n \n+    @BeforeClass\n+    public static void beforeClass() {\n+        if (System.getSecurityManager() != null) {\n+            try {\n+                System.setSecurityManager(null);\n+            } catch (Throwable ignored) {\n+            }\n+        }\n+    }\n+\n     @Before\n     public void before() {\n+        if (System.getSecurityManager() != null) {\n+            try {\n+                System.setSecurityManager(null);\n+            } catch (Throwable ignored) {\n+            }\n+        }\n         NamingContext.setActiveNamingStore(new InMemoryNamingStore());\n     }\n \n+    @After\n+    public void after() {\n+        NamingContext.setActiveNamingStore(null);\n+    }\n+\n     @Test\n     public void testRegisterURLSchemeHandler() throws Exception {\n         InitialContext ictx = new InitialContext(null);\n",
+      "verdict": "REJECT",
+      "failing_order_check": [
+        {
+          "polluter": "org.jboss.as.naming.WritableServiceBasedNamingStoreTestCase#testPermissions",
+          "status": "FAIL",
+          "secs": 1.18
+        }
+      ],
+      "integrity": {
+        "ok": true,
+        "issues": []
+      }
+    }
+  ]
+}

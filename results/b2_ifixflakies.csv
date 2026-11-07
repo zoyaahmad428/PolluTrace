@@ -1,0 +1,16 @@
+id,victim,outcome,ifix_status,fix,module_secs,runner,detail
+V114,com.vmware.admiral.request.kubernetes.RequestBrokerKubernetesServiceTest#testRequestStateHasK8sInfo,timeout,,False,5523.3,,java.nio.file.FileSystemException: C:\Users\zarpa\AppData\Local\Temp\temp677512388815713950.tmp: The process cannot access the file because it is being used by another process. | 	at sun.nio.fs.WindowsException.translateToIOException(WindowsException.java:86) | 	at sun.nio.fs.WindowsException.rethro
+V110,org.wikidata.wdtk.util.DirectoryManagerFactoryTest#createDefaultDirectoryManagerPath,fixed,FIX_INLINE_CANREMOVE,True,656.0,docker,"Verifying org.wikidata.wdtk.util.DirectoryManagerFactoryTest.createDirectoryManagerIoException, status: expected PASS, got PASS | Verifying org.wikidata.wdtk.util.DirectoryManagerFactoryTest.createDirectoryManagerIoException, status: expected ERROR, got ERROR | [INFO] Found 0 tests in round 5 of 20 "
+V034,org.apache.struts2.portlet.dispatcher.Jsr286DispatcherTest#testProcessAction_ok,tool_error,,False,152.2,docker,
+V041,org.apache.struts2.portlet.dispatcher.Jsr168DispatcherTest#testRender_ok,tool_error,,False,262.1,docker,
+V051,cern.c2mon.server.elasticsearch.tag.config.TagConfigDocumentIndexerTests#reindexTagConfigDocuments,timeout,,False,3600.1,docker,
+V090,net.sf.marineapi.ais.event.AbstractAISMessageListenerTest#testSequenceListenerWithMixedOrder,timeout,,False,3600.4,docker,"Trying group 0 of 942 (found 0 so far)[INFO] FIRST CLEANER: Found first cleaner [net.sf.marineapi.nmea.parser.SentenceFactoryTest.testHasParser, net.sf.marineapi.nmea.parser.SentenceFactoryTest.testListParsers, net.sf.marineapi.nmea.parser.MHUTest.testGetAbsoluteHumidity, net.sf.marineapi.nmea.parse"
+V112,dk.tbsalling.aismessages.nmea.NMEAMessageHandlerTest#canHandleUnfragmentedMessageReceived,not_fixed,NO_CLEANER,False,1137.0,docker,
+V055,io.elasticjob.lite.internal.failover.FailoverServiceTest#assertGetLocalFailoverItemsIfShutdown,timeout,,False,3600.2,docker,
+V070,com.github.kevinsawicki.http.HttpRequestTest#verifierAccepts,timeout,,False,3600.2,docker,
+V127,org.jboss.as.naming.InitialContextTestCase#testRegisterURLSchemeHandler,tool_error,,False,166.5,docker,
+V052,lv.ctco.cukes.http.facade.HttpAssertionFacadeImplTest#shouldReturnBodyWhenEnabledAndNoMax,timeout,,False,3600.2,docker,
+V057,io.github.jhipster.registry.web.rest.AccountResourceTest#testGetUnknownAccount,timeout,,False,3600.2,docker,
+V108,org.springframework.ws.soap.security.xwss.callback.SpringDigestPasswordValidationCallbackHandlerTest#testAuthenticateUserDigestValidInvalid,tool_error,,False,2932.6,docker,java.io.FileNotFoundException: /w/spring-ws-security/.dtfixingtools/error (Input/output error) | java.nio.file.FileSystemException: /w/spring-ws-security: Input/output error | 	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:100) | 	at java.base/sun.nio.fs.UnixExcepti
+V024,org.apache.dubbo.rpc.protocol.dubbo.telnet.ChangeTelnetHandlerTest#testChangeServiceNotExport,tool_error,,False,629.1,docker,
+V100,org.springframework.boot.actuate.autoconfigure.cloudfoundry.reactive.CloudFoundryWebFluxEndpointIntegrationTests#operationWithSecurityInterceptorSuccess,tool_error,,False,2189.5,docker,

@@ -1,0 +1,44 @@
+{
+  "system": "B1",
+  "victim": "com.vmware.admiral.request.kubernetes.RequestBrokerKubernetesServiceTest#testRequestStateHasK8sInfo",
+  "project": "https://github.com/vmware/admiral",
+  "sha": "e4b02936cc7d4ff2714e7231db0c4373ba5d48a2",
+  "module": "request",
+  "failing_order": [
+    "com.vmware.admiral.request.kubernetes.RequestBrokerKubernetesServiceTest#testRequestLifeCycleOnSpecificGroupPlacement",
+    "com.vmware.admiral.request.kubernetes.RequestBrokerKubernetesServiceTest#testRequestStateHasK8sInfo"
+  ],
+  "llm": {
+    "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+    "model": "gemini-3.8-flash"
+  },
+  "runs": [
+    {
+      "order": [
+        "com.vmware.admiral.request.kubernetes.RequestBrokerKubernetesServiceTest#testRequestLifeCycleOnSpecificGroupPlacement",
+        "com.vmware.admiral.request.kubernetes.RequestBrokerKubernetesServiceTest#testRequestStateHasK8sInfo"
+      ],
+      "result": "FAIL",
+      "secs": 62.0
+    }
+  ],
+  "patches": [
+    {
+      "id": "p1",
+      "site": "victim_file",
+      "diff": "diff --git a/request/src/test/java/com/vmware/admiral/request/kubernetes/RequestBrokerKubernetesServiceTest.java b/request/src/test/java/com/vmware/admiral/request/kubernetes/RequestBrokerKubernetesServiceTest.java\nindex a691968..9539d0b 100644\n--- a/request/src/test/java/com/vmware/admiral/request/kubernetes/RequestBrokerKubernetesServiceTest.java\n+++ b/request/src/test/java/com/vmware/admiral/request/kubernetes/RequestBrokerKubernetesServiceTest.java\n@@ -69,6 +69,7 @@ public class RequestBrokerKubernetesServiceTest extends RequestBaseTest {\n     public void setup() {\n         HostInitKubernetesAdapterServiceConfig.startServices(host, true);\n         MockKubernetesApplicationAdapterService.clear();\n+        MockKubernetesApplicationAdapterService.getCreatedDeploymentStates().clear();\n     }\n \n     private static final String WP_K8S_TEMPLATE = \"WordPress_with_MySQL_kubernetes.yaml\";\n",
+      "verdict": "REJECT",
+      "failing_order_check": [
+        {
+          "polluter": "com.vmware.admiral.request.kubernetes.RequestBrokerKubernetesServiceTest#testRequestLifeCycleOnSpecificGroupPlacement",
+          "status": "FAIL",
+          "secs": 65.22
+        }
+      ],
+      "integrity": {
+        "ok": true,
+        "issues": []
+      }
+    }
+  ]
+}

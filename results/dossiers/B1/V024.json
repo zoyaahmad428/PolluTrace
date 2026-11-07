@@ -1,0 +1,83 @@
+{
+  "system": "B1",
+  "victim": "org.apache.dubbo.rpc.protocol.dubbo.telnet.ChangeTelnetHandlerTest#testChangeServiceNotExport",
+  "project": "https://github.com/apache/incubator-dubbo",
+  "sha": "737f7a7ea67832d7f17517326fb2491d0a086dd7",
+  "module": "dubbo-rpc/dubbo-rpc-dubbo",
+  "failing_order": [
+    "org.apache.dubbo.rpc.protocol.dubbo.ReferenceCountExchangeClientTest#test_share_connect",
+    "org.apache.dubbo.rpc.protocol.dubbo.telnet.ChangeTelnetHandlerTest#testChangeServiceNotExport"
+  ],
+  "llm": {
+    "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+    "model": "gemini-3.6-flash"
+  },
+  "runs": [
+    {
+      "order": [
+        "org.apache.dubbo.rpc.protocol.dubbo.ReferenceCountExchangeClientTest#test_share_connect",
+        "org.apache.dubbo.rpc.protocol.dubbo.telnet.ChangeTelnetHandlerTest#testChangeServiceNotExport"
+      ],
+      "result": "FAIL",
+      "secs": 6.49
+    }
+  ],
+  "patches": [
+    {
+      "id": "p1",
+      "site": "victim_file",
+      "diff": "diff --git a/dubbo-rpc/dubbo-rpc-dubbo/src/test/java/org/apache/dubbo/rpc/protocol/dubbo/telnet/ChangeTelnetHandlerTest.java b/dubbo-rpc/dubbo-rpc-dubbo/src/test/java/org/apache/dubbo/rpc/protocol/dubbo/telnet/ChangeTelnetHandlerTest.java\nindex 77a0832..4609089 100644\n--- a/dubbo-rpc/dubbo-rpc-dubbo/src/test/java/org/apache/dubbo/rpc/protocol/dubbo/telnet/ChangeTelnetHandlerTest.java\n+++ b/dubbo-rpc/dubbo-rpc-dubbo/src/test/java/org/apache/dubbo/rpc/protocol/dubbo/telnet/ChangeTelnetHandlerTest.java\n@@ -52,6 +52,7 @@ public class ChangeTelnetHandlerTest {\n     @SuppressWarnings(\"unchecked\")\n     @Before\n     public void setUp() {\n+        DubboProtocol.getDubboProtocol().destroy();\n         mockChannel = mock(Channel.class);\n         mockInvoker = mock(Invoker.class);\n         given(mockChannel.getAttribute(\"telnet.service\")).willReturn(\"org.apache.dubbo.rpc.protocol.dubbo.support.DemoService\");\n@@ -73,6 +74,7 @@ public class ChangeTelnetHandlerTest {\n \n     @After\n     public void after() {\n+        DubboProtocol.getDubboProtocol().destroy();\n         ProtocolUtils.closeAll();\n         reset(mockChannel, mockInvoker);\n     }\n@@ -122,4 +124,4 @@ public class ChangeTelnetHandlerTest {\n         String result = change.telnet(mockChannel, \"/\");\n         assertEquals(\"Cancelled default service org.apache.dubbo.rpc.protocol.dubbo.support.DemoService.\", result);\n     }\n-}\n\\ No newline at end of file\n+}\n",
+      "verdict": "ACCEPT",
+      "failing_order_check": [
+        {
+          "polluter": "org.apache.dubbo.rpc.protocol.dubbo.ReferenceCountExchangeClientTest#test_share_connect",
+          "status": "PASS",
+          "secs": 2.43
+        },
+        {
+          "polluter": "org.apache.dubbo.rpc.protocol.dubbo.ReferenceCountExchangeClientTest#test_multi_destory",
+          "status": "PASS",
+          "secs": 2.16
+        },
+        {
+          "polluter": "org.apache.dubbo.rpc.protocol.dubbo.ReferenceCountExchangeClientTest#test_not_share_connect",
+          "status": "PASS",
+          "secs": 2.17
+        },
+        {
+          "polluter": "org.apache.dubbo.rpc.protocol.dubbo.ReferenceCountExchangeClientTest#test_counter_error",
+          "status": "PASS",
+          "secs": 3.25
+        }
+      ],
+      "integrity": {
+        "ok": true,
+        "issues": []
+      }
+    }
+  ],
+  "validation": {
+    "n": 100,
+    "n_run": 9,
+    "budget_hit": true,
+    "pool_size": 25,
+    "passes": 9,
+    "fails": 0,
+    "errors": 0,
+    "first_fail_index": null,
+    "order_secs": [
+      111.18,
+      108.41,
+      101.02,
+      110.36,
+      110.39,
+      111.08,
+      114.77,
+      98.16,
+      102.03
+    ],
+    "fail_indices": [],
+    "total_secs": 967.7,
+    "mean_order_secs": 107.49
+  }
+}

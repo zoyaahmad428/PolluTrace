@@ -1,0 +1,33 @@
+id,victim,outcome,compiled,fix,passes_all_known_polluters,integrity,accepted,rand_n,rand_fails,false_fix,first_fail_index,mean_order_secs,rand_secs,prompt_tokens,completion_tokens,llm_secs,victim_secs,model,detail
+V110,org.wikidata.wdtk.util.DirectoryManagerFactoryTest#createDefaultDirectoryManagerPath,fixed,True,True,True,ok,True,100,0,False,,0.82,84.0,1939,1035,266.2,384.4,gemini-3.8-flash,
+V114,com.vmware.admiral.request.kubernetes.RequestBrokerKubernetesServiceTest#testRequestStateHasK8sInfo,not_fixed,True,False,False,ok,False,,,,,,,4213,3326,1204.6,1389.9,gemini-3.8-flash,
+V051,cern.c2mon.server.elasticsearch.tag.config.TagConfigDocumentIndexerTests#reindexTagConfigDocuments,not_fixed,True,False,False,ok,False,,,,,,,3078,1863,64.6,222.2,gemini-3.8-flash,
+V034,org.apache.struts2.portlet.dispatcher.Jsr286DispatcherTest#testProcessAction_ok,compile_error,False,,,,,,,,,,,4709,636,417.9,493.0,gemini-3.8-flash,"r.java:347)
+[ERROR] 
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+"
+V090,net.sf.marineapi.ais.event.AbstractAISMessageListenerTest#testSequenceListenerWithMixedOrder,fixed,True,True,True,ok,True,100,0,False,,0.86,88.0,2356,1568,162.8,3078.2,gemini-3.6-flash,
+V112,dk.tbsalling.aismessages.nmea.NMEAMessageHandlerTest#canHandleUnfragmentedMessageReceived,fixed,True,True,True,ok,True,100,0,False,,0.38,39.4,2056,1424,21.2,2729.7,gemini-3.6-flash,
+V055,io.elasticjob.lite.internal.failover.FailoverServiceTest#assertGetLocalFailoverItemsIfShutdown,fixed,True,True,True,ok,True,100,0,False,,6.74,676.2,4301,3373,44.1,900.9,gemini-3.6-flash,
+V070,com.github.kevinsawicki.http.HttpRequestTest#verifierAccepts,no_code_in_reply,,,,,,,,,,,,16587,9385,87.4,88.7,gemini-3.6-flash,"```java
+/*
+ * Copyright (c) 2014 Kevin Sawicki <kevinsawicki@gmail.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentat"
+V041,org.apache.struts2.portlet.dispatcher.Jsr168DispatcherTest#testRender_ok,not_fixed,True,False,False,ok,False,,,,,,,4843,3588,35.8,68.1,gemini-3.6-flash,
+V127,org.jboss.as.naming.InitialContextTestCase#testRegisterURLSchemeHandler,not_fixed,True,False,False,ok,False,,,,,,,1750,1017,146.3,510.2,gemini-3.6-flash,
+V052,lv.ctco.cukes.http.facade.HttpAssertionFacadeImplTest#shouldReturnBodyWhenEnabledAndNoMax,compile_error,False,,,,,,,,,,,2803,1881,46.5,66.8,gemini-3.6-flash,"r.java:347)
+[ERROR] 
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+"
+V057,io.github.jhipster.registry.web.rest.AccountResourceTest#testGetUnknownAccount,fixed,True,True,True,ok,True,23,0,False,,39.2,902.7,2198,802,32.0,1072.4,gemini-3.6-flash,
+V108,org.springframework.ws.soap.security.xwss.callback.SpringDigestPasswordValidationCallbackHandlerTest#testAuthenticateUserDigestValidInvalid,fixed,True,True,True,ok,True,100,0,False,,2.64,265.7,2312,1286,75.2,369.8,gemini-3.6-flash,
+V024,org.apache.dubbo.rpc.protocol.dubbo.telnet.ChangeTelnetHandlerTest#testChangeServiceNotExport,fixed,True,True,True,ok,True,9,0,False,,107.49,967.7,2346,1364,19.0,1047.8,gemini-3.6-flash,
+V100,org.springframework.boot.actuate.autoconfigure.cloudfoundry.reactive.CloudFoundryWebFluxEndpointIntegrationTests#operationWithSecurityInterceptorSuccess,fixed,True,True,True,ok,True,42,0,False,,21.61,908.6,4012,3204,24.0,1073.7,gemini-3.6-flash,

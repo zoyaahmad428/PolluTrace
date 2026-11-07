@@ -1,0 +1,164 @@
+{
+  "system": "B4",
+  "config": {
+    "name": "b4_niodebugger",
+    "localizer": "bisect",
+    "llm_rank": false,
+    "statediff": false,
+    "validator": "weak",
+    "n_loop": 20,
+    "loop_secs": 300,
+    "relocalize": false,
+    "max_iters": 3,
+    "max_llm_calls": 8,
+    "max_local_runs": 30,
+    "victim_secs": 1800,
+    "temperature": 0.2
+  },
+  "run": 1,
+  "victim": "org.apache.struts2.portlet.dispatcher.Jsr286DispatcherTest#testRender_ok",
+  "id": "V049",
+  "project": "https://github.com/Apache/Struts",
+  "sha": "13d9053050c9e4fb2ef049db6a37d3f6eebf48fa",
+  "module": "plugins/portlet",
+  "failing_order": [
+    "org.apache.struts2.portlet.interceptor.PortletStateInterceptorTest#testCopyValueStackFromEventToRenderPhase",
+    "org.apache.struts2.portlet.PortletSessionMapTest#testGet",
+    "org.apache.struts2.portlet.PortletRequestMapTest#testClear",
+    "org.apache.struts2.portlet.result.PortletResultTest#testTitleAndContentType",
+    "org.apache.struts2.portlet.PortletRequestMapTest#testGet",
+    "org.apache.struts2.portlet.interceptor.PortletAwareInterceptorTest#testPortletRequestIsSet",
+    "org.apache.struts2.portlet.PortletSessionMapTest#testEntrySet",
+    "org.apache.struts2.portlet.interceptor.PortletStateInterceptorTest#testRestoreValueStackInRenderPhaseWhenNotProperPrg",
+    "org.apache.struts2.portlet.context.PortletActionContextTest#testGetActionRequestAndResponseInRenderPhase",
+    "org.apache.struts2.portlet.PortletSessionMapTest#testRemove",
+    "org.apache.struts2.portlet.interceptor.PortletStateInterceptorTest#testDoNotRestoreValueStackInRenderPhaseWhenProperPrg",
+    "org.apache.struts2.portlet.PortletApplicationMapTest#testClear",
+    "org.apache.struts2.portlet.result.PortletResultTest#testDoExecute_event_locationIsAction",
+    "org.apache.struts2.views.jsp.PortletUrlTagTest#testResourceUrlWithTwoNestedParam",
+    "org.apache.struts2.portlet.result.PortletResultTest#testDoExecute_render",
+    "org.apache.struts2.portlet.PortletRequestMapTest#testPut",
+    "org.apache.struts2.portlet.dispatcher.Jsr286DispatcherTest#testModeChangeUsingPortletWidgets",
+    "org.apache.struts2.views.jsp.PortletUrlTagTest#testWhenPortletModeDiffersFromCurrentAndNoParametersAreSetRenderTheDefaults",
+    "org.apache.struts2.portlet.context.PortletActionContextTest#testGetPortletConfig",
+    "org.apache.struts2.portlet.util.PortletUrlHelperTest#testCreateRenderUrlWithDifferentWindowState",
+    "org.apache.struts2.views.jsp.PortletUrlTagTest#testUrlWithNoActionOrMethod",
+    "org.apache.struts2.portlet.PortletApplicationMapTest#testPut",
+    "org.apache.struts2.portlet.util.PortletUrlHelperTest#testCreateRenderUrlWithDifferentPortletMode",
+    "org.apache.struts2.portlet.dispatcher.Jsr286DispatcherTest#testProcessAction_ok",
+    "org.apache.struts2.portlet.context.PortletActionContextTest#testGetPhase",
+    "org.apache.struts2.portlet.result.PortletResultTest#testDoExecute_event_locationIsJsp",
+    "org.apache.struts2.views.jsp.PortletUrlTagTest#testEnsureParamsAreStringArrays",
+    "org.apache.struts2.views.jsp.PortletUrlTagTest#testUrlWithMethod",
+    "org.apache.struts2.portlet.context.PortletActionContextTest#testGetDefaultActionForMode",
+    "org.apache.struts2.portlet.PortletRequestMapTest#testEntrySet",
+    "org.apache.struts2.portlet.dispatcher.Jsr168DispatcherTest#testModeChangeUsingPortletWidgets",
+    "org.apache.struts2.portlet.dispatcher.Jsr286DispatcherTest#testRender_ok"
+  ],
+  "llm": {
+    "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+    "model": "gemini-3.5-flash-lite"
+  },
+  "result": {
+    "id": "V049",
+    "project": "Struts",
+    "victim": "org.apache.struts2.portlet.dispatcher.Jsr286DispatcherTest#testRender_ok",
+    "system": "B4",
+    "config": "b4_niodebugger",
+    "run": 1,
+    "temperature": 0.2,
+    "seed": 2492589341,
+    "llm_calls": 3,
+    "prompt_tokens": 26995,
+    "completion_tokens": 10229,
+    "llm_secs": 20.1,
+    "test_runs": 12,
+    "test_executions": 105,
+    "test_secs": 52.4,
+    "agent_secs": 131.6,
+    "model": "gemini-3.5-flash-lite",
+    "iterations": 3,
+    "polluter_found": "org.apache.struts2.portlet.dispatcher.Jsr168DispatcherTest#testModeChangeUsingPortletWidgets",
+    "loc_runs": 11,
+    "polluter_correct": true,
+    "target": "",
+    "stop_reason": "max iterations",
+    "detail": "",
+    "outcome": "no_patch"
+  },
+  "system_output": {
+    "polluter": "org.apache.struts2.portlet.dispatcher.Jsr168DispatcherTest#testModeChangeUsingPortletWidgets",
+    "loc_runs": 11,
+    "iterations": 3,
+    "target": "",
+    "polluters": [
+      "org.apache.struts2.portlet.dispatcher.Jsr168DispatcherTest#testModeChangeUsingPortletWidgets"
+    ],
+    "attempts": [
+      {
+        "attempt": 1,
+        "target": "victim",
+        "reason": "Reset `mockActionFactory` in the `setUp` method of the victim test class to prevent leaking state across tests.",
+        "diff": "diff --git a/plugins/portlet/src/test/java/org/apache/struts2/portlet/dispatcher/Jsr286DispatcherTest.java b/plugins/portlet/src/test/java/org/apache/struts2/portlet/dispatcher/Jsr286DispatcherTest.java\nindex 6d8ff4b..891c299 100644\n--- a/plugins/portlet/src/test/java/org/apache/struts2/portlet/dispatcher/Jsr286DispatcherTest.java\n+++ b/plugins/portlet/src/test/java/org/apache/struts2/portlet/dispatcher/Jsr286DispatcherTest.java\n@@ -186,6 +186,7 @@ public class Jsr286DispatcherTest extends MockObjectTestCase {\n \r\n \tpublic void setUp() {\r\n \t\tdispatcher = new Jsr286Dispatcher();\r\n+\t\tmockActionFactory = null;\r\n \t}\r\n \r\n \tprivate void initPortletConfig(final Map<String, String> initParams,\r\n@@ -322,7 +323,8 @@ public class Jsr286DispatcherTest extends MockObjectTestCase {\n \t *            The map containing the <code>key</code> and\r\n \t *            <code>values</code>. The key is the expected parameter to\r\n \t *            <code>method</code>, and value is the value that should be\r\n-\t *            returned from the stub.\r\n+\t *            returned from\r\n+\t *            the stub.\r\n \t * @param mock\r\n \t *            The mock to initialize.\r\n \t * @param method\r\n",
+        "verdict": "REJECT",
+        "reasons": [
+          "still fails in failing order"
+        ],
+        "checks": {
+          "failing_order": "FAIL"
+        }
+      },
+      {
+        "attempt": 2,
+        "target": "victim",
+        "reason": "Reset shared static state (`Jsr168Dispatcher.lastMode`) and mock factories in `setUp()` of the victim test class to prevent state pollution from `Jsr168DispatcherTest`.",
+        "diff": "diff --git a/plugins/portlet/src/test/java/org/apache/struts2/portlet/dispatcher/Jsr286DispatcherTest.java b/plugins/portlet/src/test/java/org/apache/struts2/portlet/dispatcher/Jsr286DispatcherTest.java\nindex 6d8ff4b..b453f7c 100644\n--- a/plugins/portlet/src/test/java/org/apache/struts2/portlet/dispatcher/Jsr286DispatcherTest.java\n+++ b/plugins/portlet/src/test/java/org/apache/struts2/portlet/dispatcher/Jsr286DispatcherTest.java\n@@ -186,6 +186,8 @@ public class Jsr286DispatcherTest extends MockObjectTestCase {\n \r\n \tpublic void setUp() {\r\n \t\tdispatcher = new Jsr286Dispatcher();\r\n+\t\tmockActionFactory = null;\r\n+\t\tJsr168Dispatcher.lastMode = null;\r\n \t}\r\n \r\n \tprivate void initPortletConfig(final Map<String, String> initParams,\r\n",
+        "feedback": "The file does not compile:\n[ERROR] /C:/Users/zarpa/Documents/pollutrace-work/work-p2/projects/Apache__Struts__13d90530/plugins/portlet/src/test/java/org/apache/struts2/portlet/dispatcher/Jsr286DispatcherTest.java:[190,33] cannot find symbol\n[ERROR] /C:/Users/zarpa/Documents/pollutrace-work/work-p2/projects/Apache__Struts__13d90530/plugins/portlet/src/test/java/org/apache/struts2/portlet/dispatcher/Jsr286DispatcherTest.java:[190,33] cannot find symbol",
+        "verdict": "compile_error"
+      },
+      {
+        "attempt": 3,
+        "target": "victim",
+        "reason": "Resetting `mockActionFactory` and the shared static field `Jsr168Dispatcher.lastMode` in `setUp()` prevents state leakage from `Jsr168DispatcherTest` tests.",
+        "diff": "diff --git a/plugins/portlet/src/test/java/org/apache/struts2/portlet/dispatcher/Jsr286DispatcherTest.java b/plugins/portlet/src/test/java/org/apache/struts2/portlet/dispatcher/Jsr286DispatcherTest.java\nindex 6d8ff4b..988f2a0 100644\n--- a/plugins/portlet/src/test/java/org/apache/struts2/portlet/dispatcher/Jsr286DispatcherTest.java\n+++ b/plugins/portlet/src/test/java/org/apache/struts2/portlet/dispatcher/Jsr286DispatcherTest.java\n@@ -101,7 +101,7 @@ public class Jsr286DispatcherTest extends MockObjectTestCase {\n \t\tinitParams.put(\"viewNamespace\", \"/view\");\r\n \r\n \t\tMap<String, String[]> requestParams = new HashMap<String, String[]>();\r\n-\t\trequestParams.put(ACTION_PARAM, new String[] { \"/view/testAction\" });\r\n+\t\trequestParams.put(ACTION_PARAM, new String[] { \"/view/testAction\" }, );\r\n \t\trequestParams.put(MODE_PARAM, new String[] { mode.toString() });\r\n \r\n \t\tinitParams.put(StrutsConstants.STRUTS_ALWAYS_SELECT_FULL_NAMESPACE,\r\n@@ -186,6 +186,8 @@ public class Jsr286DispatcherTest extends MockObjectTestCase {\n \r\n \tpublic void setUp() {\r\n \t\tdispatcher = new Jsr286Dispatcher();\r\n+\t\tmockActionFactory = null;\r\n+\t\tJsr168Dispatcher.lastMode = null;\r\n \t}\r\n \r\n \tprivate void initPortletConfig(final Map<String, String> initParams,\r\n",
+        "feedback": "The file does not compile:\n[ERROR] /C:/Users/zarpa/Documents/pollutrace-work/work-p2/projects/Apache__Struts__13d90530/plugins/portlet/src/test/java/org/apache/struts2/portlet/dispatcher/Jsr286DispatcherTest.java:[104,86] illegal start of expression\n[ERROR] /C:/Users/zarpa/Documents/pollutrace-work/work-p2/projects/Apache__Struts__13d90530/plugins/portlet/src/test/java/org/apache/struts2/portlet/dispatcher/Jsr286DispatcherTest.java:[104,86] illegal start of expression",
+        "verdict": "compile_error"
+      }
+    ],
+    "localization": {
+      "polluter": "org.apache.struts2.portlet.dispatcher.Jsr168DispatcherTest#testModeChangeUsingPortletWidgets",
+      "strategy": "bisect",
+      "runs": 11,
+      "ranked": [
+        "org.apache.struts2.portlet.interceptor.PortletStateInterceptorTest#testCopyValueStackFromEventToRenderPhase",
+        "org.apache.struts2.portlet.PortletSessionMapTest#testGet",
+        "org.apache.struts2.portlet.PortletRequestMapTest#testClear",
+        "org.apache.struts2.portlet.result.PortletResultTest#testTitleAndContentType",
+        "org.apache.struts2.portlet.PortletRequestMapTest#testGet",
+        "org.apache.struts2.portlet.interceptor.PortletAwareInterceptorTest#testPortletRequestIsSet",
+        "org.apache.struts2.portlet.PortletSessionMapTest#testEntrySet",
+        "org.apache.struts2.portlet.interceptor.PortletStateInterceptorTest#testRestoreValueStackInRenderPhaseWhenNotProperPrg",
+        "org.apache.struts2.portlet.context.PortletActionContextTest#testGetActionRequestAndResponseInRenderPhase",
+        "org.apache.struts2.portlet.PortletSessionMapTest#testRemove"
+      ],
+      "rank_of_found": 31,
+      "budget_hit": false
+    },
+    "stop_reason": "max iterations"
+  },
+  "final_patch": null,
+  "final_evaluation": {},
+  "usage": {
+    "llm_calls": 3,
+    "prompt_tokens": 26995,
+    "completion_tokens": 10229,
+    "llm_secs": 20.1,
+    "test_runs": 12,
+    "test_executions": 105,
+    "test_secs": 52.4,
+    "compiles": 3,
+    "wall_secs": 131.6,
+    "steps": 30
+  },
+  "trajectory": "logs\\trajectories\\E2\\B4\\run1\\V049.jsonl"
+}

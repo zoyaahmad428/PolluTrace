@@ -1,0 +1,101 @@
+{
+  "system": "B1",
+  "victim": "org.springframework.boot.actuate.autoconfigure.cloudfoundry.reactive.CloudFoundryWebFluxEndpointIntegrationTests#operationWithSecurityInterceptorSuccess",
+  "project": "https://github.com/spring-projects/spring-boot",
+  "sha": "daa3d457b71896a758995c264977bdd1414ee4d4",
+  "module": "spring-boot-project/spring-boot-actuator-autoconfigure",
+  "failing_order": [
+    "org.springframework.boot.actuate.autoconfigure.cloudfoundry.reactive.CloudFoundryWebFluxEndpointIntegrationTests#linksToOtherEndpointsForbidden",
+    "org.springframework.boot.actuate.autoconfigure.cloudfoundry.reactive.CloudFoundryWebFluxEndpointIntegrationTests#operationWithSecurityInterceptorSuccess"
+  ],
+  "llm": {
+    "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+    "model": "gemini-3.6-flash"
+  },
+  "runs": [
+    {
+      "order": [
+        "org.springframework.boot.actuate.autoconfigure.cloudfoundry.reactive.CloudFoundryWebFluxEndpointIntegrationTests#linksToOtherEndpointsForbidden",
+        "org.springframework.boot.actuate.autoconfigure.cloudfoundry.reactive.CloudFoundryWebFluxEndpointIntegrationTests#operationWithSecurityInterceptorSuccess"
+      ],
+      "result": "FAIL",
+      "secs": 32.03
+    }
+  ],
+  "patches": [
+    {
+      "id": "p1",
+      "site": "victim_file",
+      "diff": "spring-boot-project/spring-boot-actuator-autoconfigure/src/test/java/org/springframework/boot/actuate/autoconfigure/cloudfoundry/reactive/CloudFoundryWebFluxEndpointIntegrationTests.java: Filename too long\n",
+      "verdict": "ACCEPT",
+      "failing_order_check": [
+        {
+          "polluter": "org.springframework.boot.actuate.autoconfigure.cloudfoundry.reactive.CloudFoundryWebFluxEndpointIntegrationTests#linksToOtherEndpointsForbidden",
+          "status": "PASS",
+          "secs": 8.59
+        }
+      ],
+      "integrity": {
+        "ok": true,
+        "issues": []
+      }
+    }
+  ],
+  "validation": {
+    "n": 100,
+    "n_run": 42,
+    "budget_hit": true,
+    "pool_size": 22,
+    "passes": 42,
+    "fails": 0,
+    "errors": 0,
+    "first_fail_index": null,
+    "order_secs": [
+      22.77,
+      19.39,
+      21.83,
+      22.29,
+      19.27,
+      20.9,
+      20.59,
+      20.23,
+      21.55,
+      21.1,
+      20.9,
+      21.39,
+      22.84,
+      22.11,
+      21.67,
+      21.08,
+      19.99,
+      27.02,
+      21.88,
+      20.26,
+      22.53,
+      20.2,
+      20.07,
+      21.28,
+      20.92,
+      20.45,
+      20.27,
+      21.76,
+      25.07,
+      22.52,
+      22.4,
+      20.87,
+      19.64,
+      20.02,
+      21.08,
+      19.42,
+      20.37,
+      21.63,
+      32.52,
+      22.07,
+      22.19,
+      21.27
+    ],
+    "fail_indices": [],
+    "total_secs": 908.6,
+    "mean_order_secs": 21.61
+  }
+}

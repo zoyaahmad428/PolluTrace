@@ -1,0 +1,16 @@
+id,victim,n,pool_size,fails,errors,fail_rate,first_fail_index,mean_order_secs,total_secs
+V034,org.apache.struts2.portlet.dispatcher.Jsr286DispatcherTest#testProcessAction_ok,100,24,17,0,0.17,1,2.7,271.9
+V110,org.wikidata.wdtk.util.DirectoryManagerFactoryTest#createDefaultDirectoryManagerPath,100,22,42,0,0.42,1,1.12,114.4
+V114,com.vmware.admiral.request.kubernetes.RequestBrokerKubernetesServiceTest#testRequestStateHasK8sInfo,3,True,22,2,0,0.667,2,428.9,1286.8
+V051,cern.c2mon.server.elasticsearch.tag.config.TagConfigDocumentIndexerTests#reindexTagConfigDocuments,21,True,19,4,0,0.19,2,43.3,909.9
+V090,net.sf.marineapi.ais.event.AbstractAISMessageListenerTest#testSequenceListenerWithMixedOrder,100,False,22,35,0,0.35,1,0.31,32.5
+V112,dk.tbsalling.aismessages.nmea.NMEAMessageHandlerTest#canHandleUnfragmentedMessageReceived,100,False,23,77,0,0.77,1,0.37,38.5
+V055,io.elasticjob.lite.internal.failover.FailoverServiceTest#assertGetLocalFailoverItemsIfShutdown,100,False,25,62,0,0.62,1,4.01,403.1
+V070,com.github.kevinsawicki.http.HttpRequestTest#verifierAccepts,100,False,22,54,0,0.54,1,6.31,634.6
+V127,org.jboss.as.naming.InitialContextTestCase#testRegisterURLSchemeHandler,100,False,22,16,0,0.16,9,1.14,116.3
+V052,lv.ctco.cukes.http.facade.HttpAssertionFacadeImplTest#shouldReturnBodyWhenEnabledAndNoMax,100,False,14,20,0,0.2,9,3.77,379.8
+V057,io.github.jhipster.registry.web.rest.AccountResourceTest#testGetUnknownAccount,35,True,23,22,0,0.629,1,26.2,918.1
+V108,org.springframework.ws.soap.security.xwss.callback.SpringDigestPasswordValidationCallbackHandlerTest#testAuthenticateUserDigestValidInvalid,100,False,22,34,0,0.34,3,2.53,255.3
+V024,org.apache.dubbo.rpc.protocol.dubbo.telnet.ChangeTelnetHandlerTest#testChangeServiceNotExport,8,True,25,2,0,0.25,1,120.85,967.0
+V100,org.springframework.boot.actuate.autoconfigure.cloudfoundry.reactive.CloudFoundryWebFluxEndpointIntegrationTests#operationWithSecurityInterceptorSuccess,58,True,22,29,0,0.5,2,15.55,903.4
+V041,org.apache.struts2.portlet.dispatcher.Jsr168DispatcherTest#testRender_ok,100,False,23,10,0,0.1,25,1.95,196.7

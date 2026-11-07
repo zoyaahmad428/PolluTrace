@@ -1,0 +1,34 @@
+{
+  "system": "B1",
+  "victim": "lv.ctco.cukes.http.facade.HttpAssertionFacadeImplTest#shouldReturnBodyWhenEnabledAndNoMax",
+  "project": "https://github.com/ctco/cukes",
+  "sha": "b483e1a8f261b80a66291a42fc455256b0b5059c",
+  "module": "cukes-http",
+  "failing_order": [
+    "lv.ctco.cukes.http.facade.HttpAssertionFacadeImplTest#shouldNotReturnBodyWhenEnabledButLongerThanMaxSize",
+    "lv.ctco.cukes.http.facade.HttpAssertionFacadeImplTest#shouldReturnBodyWhenEnabledAndNoMax"
+  ],
+  "llm": {
+    "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+    "model": "gemini-3.6-flash"
+  },
+  "runs": [
+    {
+      "order": [
+        "lv.ctco.cukes.http.facade.HttpAssertionFacadeImplTest#shouldNotReturnBodyWhenEnabledButLongerThanMaxSize",
+        "lv.ctco.cukes.http.facade.HttpAssertionFacadeImplTest#shouldReturnBodyWhenEnabledAndNoMax"
+      ],
+      "result": "FAIL",
+      "secs": 4.27
+    }
+  ],
+  "patches": [
+    {
+      "id": "p1",
+      "site": "victim_file",
+      "diff": "diff --git a/cukes-http/src/test/java/lv/ctco/cukes/http/facade/HttpAssertionFacadeImplTest.java b/cukes-http/src/test/java/lv/ctco/cukes/http/facade/HttpAssertionFacadeImplTest.java\nindex 337ed2f..52b445f 100644\n--- a/cukes-http/src/test/java/lv/ctco/cukes/http/facade/HttpAssertionFacadeImplTest.java\n+++ b/cukes-http/src/test/java/lv/ctco/cukes/http/facade/HttpAssertionFacadeImplTest.java\n@@ -14,6 +14,7 @@ import org.apache.http.ProtocolVersion;\n import org.apache.http.impl.EnglishReasonPhraseCatalog;\n import org.apache.http.message.BasicHttpResponse;\n import org.apache.http.message.BasicStatusLine;\n+import org.junit.Before;\n import org.junit.Test;\n \n import java.util.Locale;\n@@ -33,6 +34,11 @@ public class HttpAssertionFacadeImplTest {\n \n     GlobalWorldFacade world = objectFactory.getInstance(GlobalWorldFacade.class);\n \n+    @Before\n+    public void setUp() {\n+        world.reInit();\n+    }\n+\n     @Test\n     public void shouldNotInflateVarName() throws Exception {\n         String headerName = \"name\";\n",
+      "verdict": "REJECT",
+      "reason": "compile error"
+    }
+  ]
+}
