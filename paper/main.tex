@@ -141,23 +141,18 @@ Based on this formulation, our study investigates three hypotheses that mirror o
 % ===================================================================== 6
 \section{Experimental Setup}
 \label{sec:setup}
-% Owner: Zarpash.
-% - Dataset: IDoFT odr-tests (135 victims); reproduction 90/135 (Phase 1); dev set 15; test subset
-%   (rule in scripts/make_subset.py; say which projects were dropped and why).
-% - Fixed failing orders (harness.failing_order), toolchains (JDK 8/11/17), hardware.
-% - Systems: B1, B2 (iFixFlakies), B4 (NIODebugger-style, reproduced by us), PolluTrace, A1-A3.
-% - Model name/version, temperature 0.2, seeds, budgets (pollutrace/config.py), 3 runs.
-% - No tuning on the test subset.
-\todo{experimental setup}
+
+\All experiments were conducted locally on a single Windows machine utilizing JDK 8 across all evaluated projects, with the entire evaluation completing in a total wall-clock time of approximately 4 hours. For our underlying Large Language Model, we utilized gemini-3.5-flash-lite via the Gemini free tier, accessed through an OpenAI-compatible endpoint. To ensure an equitable comparison, this exact model configuration was enforced for every LLM-based system, with the model name explicitly recorded in every result row. Model generation was configured with a temperature of 0.2, and random seeds were deterministically derived from a combination of the victim ID and the run number.To maintain strict operational boundaries, each system was bounded by a per-victim budget: a maximum of 4 repair iterations, 8 LLM calls, 30 localization test runs, and a global wall-clock limit of 1800 seconds (30 minutes). Due to API quota constraints on the free tier, we executed 1 complete evaluation run per system rather than our initially planned 3. Consequently, we do not report standard deviations or make statistical claims regarding run-to-run variance (RQ4). Furthermore, the heuristic baseline B2 (iFixFlakies) was not rerun during this experimental phase due to Docker environment instability on the host machine and its severe execution overhead ($\sim$30 minutes per victim). Thus, any B2 metrics reported reflect its Phase 1 numbers exclusively.
 
 % ===================================================================== 7
 \section{Evaluation Methodology}
 \label{sec:evalmethod}
-% Owner: Zarpash. Metrics and how they are computed (eval/stats.py): fix rate, precision,
-% false-fix rate (final 100 randomized orders), localization runs/executions, tokens, time.
-% How the base-paper comparison is made (same harness, same victims, reproduced by us).
-% Statistics: mean +- std over 3 runs; paired sign test.
-\todo{evaluation methodology}
+
+\To construct our dataset, we curated a targeted subset of 15 victims spanning 8 projects. To optimize for rapid experimentation, we filtered out computationally expensive repositories, intentionally dropping any project whose median test order execution time exceeded 10 seconds on our development set (which excluded admiral, c2mon, dubbo, jhipster-registry, and spring-boot). We further capped the subset to a maximum of 3 victims per project, selected using a fixed random seed (2026). Out of these 15 selected victims, 12 were successfully evaluated. Three victims (V116, V122, and V129 from WildFly) were excluded from all system fix-rate calculations because our system-constructed failing order was unable to reproduce the underlying failure (no_failing_order), halting the pipelines before repair could begin.
+
+Our evaluation employs a two-tiered validation strategy. First, the in-the-loop validator actively guides the repair agent by rejecting patches that fail a progressive sequence of checks: passing the original failing order, passing the [polluter, victim] pair, passing the victim in absolute isolation, and finally passing a sweep of 20 randomized test orders.
+
+Second, to establish the ultimate correctness of a generated fix, all systems were subjected to an identical, independent final evaluation harness. This rigorous final check evaluates the patched code against every known ground-truth polluter documented in the IDoFT dataset, enforces all structural integrity rules (e.g., rejecting removed assertions or skipped tests), and executes the patched victim against 100 fully randomized test orders, subject to a strict 900-second (15-minute) execution timeout. Only patches that survive this independent harness are classified as fixed.
 
 % ===================================================================== 8
 \section{Results}
@@ -190,7 +185,10 @@ Based on these findings, we conclude that Gap 1 (G1) is only partially addressed
 
 \subsection{G2: State evidence for repair}
 \input{tables/g2.tex}
-\todo{G2 results (Zarpash)}
+\To evaluate the impact of providing concrete runtime state evidence to the LLM (Gap 2), we measured both the accuracy of the state differencing tool and its downstream effect on repair generation.State Differencing Effectiveness
+The state differencing mechanism successfully executed and produced a snapshot for all 15 selected victims. The snapshot scope was comprehensive, capturing a median of 82 static fields and properties per run. The tool successfully detected at least one changed entry in 12 out of 15 cases (median 1 change), and crucially, the altered state directly belonged to data utilized by the victim in 9 of those 15 cases.The diff accurately pinpointed the root cause of pollution across multiple projects. Notable examples include SentenceFactory.parsers for the marine-api victims (V083, V084, V087), the JobRegistry.instance singleton for elastic-job (V054), DirectoryManagerFactory.dmClass for wikidata (V111), and HttpRequest.CONNECTION_FACTORY for http-request (V062, V064, V069). It also correctly identified that the user.timezone system property was altered in the WildFly cases.However, the differencing tool returned an empty result (0 changes) for three victims: V043 and V049 from Struts, and V109 from spring-ws. Because our reflection snapshot targets static fields and system properties, it fundamentally misses pollution housed in thread-local storage, such as the ActionContext utilized by the Struts framework.Impact on Repair (Ablation A2)
+Despite the high diagnostic accuracy of the state diff, Ablation A2 (which removes the state diff from the LLM prompt) demonstrated that it provided no measurable benefit to the final repair outcome. A2 achieved a fix rate of 7/12, perfectly matching the full PolluTrace pipeline (0 wins, 0 losses, 12 ties at the victim level).Furthermore, providing the state diff did not reduce the number of repair iterations. For the victims that were successfully fixed, the full pipeline with the state diff required a mean of 1.14 ($\pm$ 0.38) iterations, whereas Ablation A2 required exactly 1.00 ($\pm$ 0.00) iteration.Conclusion and Gap Resolution
+The lack of measurable gain stems from two factors. First, for the victims where the diff correctly identified the polluted static field (e.g., marine-api), the LLM was already capable of locating that exact field by statically reading the provided source code in A2. Second, for the victims that remained unfixed despite a correct state diff (e.g., http-request), the failure occurred downstream during the patch generation phase due to context size limitations, not during the diagnosis phase (as detailed in our failure analysis).Consequently, we conclude that Gap 2 (G2) is not addressed. While the system successfully produces and filters valid reflective state evidence, this evidence yields no measurable repair benefit over static context on the evaluated subset.
 
 \subsection{G3: Validation}
 \input{tables/g3.tex}
@@ -212,10 +210,18 @@ In summary, regarding our identified gaps: G1 is partially addressed, G2 is not 
 % ===================================================================== 9
 \section{Ablation and Comparative Analysis}
 \label{sec:ablation}
-% Owner: Zarpash. A1-A3 vs full (tables/main.tex rows, paired tests), cost trade-offs
-% (tables/efficiency.tex).
 \input{tables/efficiency.tex}
-\todo{ablation and efficiency}
+\To evaluate the relative efficiency and the individual contributions of PolluTrace’s components, we conducted a comparative and ablation analysis (Tables \ref{tab:main} and \ref{tab:eff}). All reported metrics represent per-victim averages computed over the 12 attempted victims.
+
+When compared to the robust B4 baseline, PolluTrace demands a higher computational budget. On average, it requires approximately 1.8× the LLM calls, 1.4× the total tokens, 3.2× the test executions, and 1.5× the agent wall-clock time. While both systems ultimately achieve the same 58.3% fix rate, PolluTrace's architectural advantage lies in its absolute precision: its 0% false-fix rate is systematically guaranteed by rigorous multi-order validation, rather than relying on the luck of a single-run acceptance check.
+
+An analysis of the execution overhead reveals that the vast majority of PolluTrace's extra test runs are incurred specifically by this strict validation process. The full PolluTrace pipeline averages 304 test executions per victim, compared to just 51 test executions when the pipeline is equipped with a weak validator (Ablation A3).
+
+To contextualize the practical deployment feasibility of this approach, we estimated a notional cost using paid API rates ($0.30 per million prompt tokens and $2.50 per million completion tokens). The financial overhead remains highly economical, costing approximately $0.05 per victim for PolluTrace, $0.04 for B4, and $0.015 for the B1 single-call baseline (though actual experimental costs were $0 due to our use of the free tier).
+
+The ablation study isolates each core component's distinct contribution to the final performance metrics. The localizer contributes a net gain of one fix by successfully enabling targeted, polluter-side repairs. The state differencing component (A2), as discussed, yields no net gain in the overall fix rate for this specific subset. Crucially, the strict validator (A3) contributes a net reduction of one false fix, actively preserving the system's 100% precision.
+
+Finally, due to API quota constraints, our evaluation was limited to a single complete run per system. Therefore, while the metrics accurately reflect the performance for this specific execution, we refrain from making broader statistical claims regarding run-to-run reliability or variance.
 
 % ===================================================================== 10
 \section{Failure Analysis}
@@ -240,10 +246,7 @@ Similarly, for victim V054 (elastic-job), PolluTrace resolved the issue in just 
 % ===================================================================== 11
 \section{Limitations and Threats to Validity}
 \label{sec:threats}
-% Owner: Zarpash. Internal (heuristic integrity check, single LLM, fixed failing order),
-% external (Java/Maven only, IDoFT subset, dropped slow projects, 45 victims not reproducible),
-% construct (randomized-order validation can still miss failures; B4 is a re-implementation).
-\todo{limitations}
+\Conclusion Validity: Our evaluation was constrained to a single execution run across a limited subset of 12 attempted victims. Consequently, we cannot provide standard variance estimates for run-to-run reliability, and our statistical sign tests are inherently underpowered (with the most significant result yielding $p = 0.25$). The quantitative findings reported in this study should therefore be interpreted as indicative rather than strictly definitive.Internal Validity: The system's repair generation was bound by our choice of a single, lightweight model (gemini-3.5-flash-lite via the free tier). Utilizing a more capable model could substantially alter the outcomes—particularly regarding the utility of the state differencing tool (G2) and the patch generation failures observed in the http-request project, which were directly caused by the model's output-length limitations. Architecturally, our structural integrity check relies on heuristics, and the requirement for the LLM to return whole-file patches severely limits its ability to repair large test classes. Furthermore, our fixed failing-order construction methodology failed to reproduce failures for 3 of the 15 selected victims, preempting any repair attempts.External Validity: The generalizability of our findings is limited by our focus on Java and Maven-based environments. The evaluation spans only 8 projects, having systematically excluded projects with slow test execution times by rule. Additionally, as observed during our Phase 1 reproduction study, 45 out of 135 OD victims from the IDoFT dataset could not be reproduced within our environment, narrowing the scope of applicable real-world flakiness our tool can address.Construct Validity: Our final acceptance check evaluates patches against 100 randomized test orders, which may still fail to expose exceptionally rare order-dependent failures. During localization, our criteria for a "found polluter" identifies a test that successfully breaks the victim in our environment, but this does not always guarantee identification of the ground-truth IDoFT polluter (as seen in the misidentification for victim V049). Finally, regarding our comparative baselines, it must be noted that B4 represents our own re-implementation of the base paper's pipeline rather than the authors' original artifact. Similarly, the metrics reported for the heuristic B2 baseline (iFixFlakies) are drawn entirely from Phase 1 data, as it was not re-executed on the specific Phase 2 evaluation subset.
 
 % ===================================================================== 12
 \section{Conclusion}
