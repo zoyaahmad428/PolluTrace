@@ -82,6 +82,8 @@ class Project:
         m = self.mod()
         if m.get("built"):
             return True
+        if not self.clone():  # a fresh work folder has no checkout yet
+            return False
         tries = []
         for jdk, mv in ATTEMPTS:
             if not env.jdk_home(jdk) or not env.maven_home(mv):
