@@ -76,10 +76,10 @@ Fix rate (passes after polluter): 8/15 = 53.3%. Accepted: 8; false fixes under 1
 ## B2 iFixFlakies (15 dev victims)
 | Outcome | Victims |
 |---|---|
-| tool_error | 8 |
-| timeout | 5 |
+| timeout | 7 |
+| tool_error | 6 |
 | fixed | 1 |
 | not_fixed | 1 |
 
-Fix rate (passes after polluter): 1/15 = 6.7%. Median time per victim 769.8 s.
+Fix rate (passes after polluter): 1/15 = 6.7%. Median time per victim 2932.6 s.
 
