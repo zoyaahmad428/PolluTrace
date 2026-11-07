@@ -62,44 +62,68 @@ flaky tests, order-dependent tests, LLM agents, automated program repair, test p
 % ===================================================================== 2
 \section{Introduction}
 \label{sec:intro}
-% Owner: Zoya.
-% - Motivation: flaky tests, OD tests as a major class [luo2014empirical, parry2021survey,
-%   zhang2014independence]; cost in CI.
-% - Current tools: iDFlakies/iFixFlakies [lam2019idflakies, shi2019ifixflakies], ODRepair
-%   [li2022odrepair], LLM-based repair [chen2024flakydoctor, fatima2024flakyfix, li2025flakyguard],
-%   base paper NIODebugger [ke2025niodebugger].
-% - The three gaps from Phase 1 (G1 blind polluter search, G2 repair without state evidence,
-%   G3 acceptance after a single passing run).
-% - Research questions RQ1-RQ3 (one per gap) + RQ4 (cost/reliability).
-% - Contributions list (system, harness/benchmark protocol, empirical study, open repository).
+Flaky tests are tests that exhibit non-deterministic behavior, passing and failing on the exact same code. A prominent subset of these are order-dependent (OD) tests, where the outcome depends entirely on which other tests ran before it within the same JVM [luo2014empirical, parry2021survey]. The existence of OD tests means that the fundamental test-independence assumption is frequently violated in practice [zhang2014independence]. This violation carries a tangible cost; in one industrial case study, developers spent 1.28% of their time repairing flaky tests, amounting to an estimated loss of $2,250 per month [parry2025systemic]. Furthermore, this is a systemic issue, with 75% of flaky tests across 24 Java projects belonging to larger co-failing clusters [parry2025systemic]. Mechanistically, OD failures occur when a "polluter" test writes to a shared state and a subsequent "victim" test reads that corrupted state and fails. Fixing these tests requires resetting or cleaning the shared state, which can often be resolved with a small edit in the setup or teardown methods [shi2019ifixflakies, hashemi2025jsod: 34/39 mocking cases fixed by clearing mocks in beforeEach].
+
+To tackle this problem, various approaches have been developed. Detection is typically handled by reordering test executions, as seen in tools like iDFlakies [lam2019idflakies], while polluter search often relies on one-by-one or delta debugging techniques [shi2019ifixflakies, zeller2002dd]. For automated repair, systems like iFixFlakies attempt to reuse existing cleaner tests [shi2019ifixflakies], and ODRepair generates new cleaners entirely [li2022odrepair]. More recently, Large Language Models (LLMs) have been deployed for LLM-based repair through tools such as FlakyDoctor [chen2024flakydoctor], FlakyFix [fatima2024flakyfix], and the industry-level FlakyGuard [li2025flakyguard]. Notably, our base paper, NIODebugger, demonstrated that an LLM agent could repair Non-Order-Dependent (NIO) tests, achieving a 58.72% correct patch rate using GPT-4 (101/172) [ke2025niodebugger].
+
+Despite these advances, the current landscape of automated OD test repair suffers from three critical gaps.
+First, G1 localization and repair are disconnected: existing tools like RankF rank potential polluters but never attempt to fix them [rahman2025rankf], while tools like NIODebugger filter out OD tests entirely and never perform a search for a polluter [ke2025niodebugger].
+Second, there is a reliance on G2 repair without runtime state evidence: while tools like Takuan show that state differences successfully reveal the cause of failure (effective in 6 of 13 victims), they do not go on to generate repairs [levin2025takuan]. Similarly, FlakyGuard contextualizes its prompts with static code paths rather than dynamic runtime values, and NIODebugger's patch rate drops steeply from 58.72% to 31.98% when its dynamic evidence is removed.
+Third, existing pipelines suffer from G3 weak acceptance: NIODebugger does not rigorously check plausible patches (allowing some that simply skip the test to pass), FlakyGuard developers ultimately rejected 48.2% of its proposed fixes, and studies show that approximately 11% of "solved" SWE-bench patches are actually incorrect [wang2026swebench]. Furthermore, mutation-perturbed test runs have shown that rigorous validation finds far more flaky tests (740) compared to standard execution (163) [parry2026flimsiness].
+
+To address these limitations, our work investigates the following research questions:
+
+RQ1 (G1): Does execution-confirmed, statically ranked localization find a real polluter with fewer test executions than one-by-one or delta debugging, and does it successfully raise the fix rate?
+
+RQ2 (G2): Does incorporating a reflective state diff of the polluter's effect raise the overall fix rate and reduce the number of repair iterations?
+
+RQ3 (G3): Does strict multi-order validation reduce the number of false fixes and effectively reject test-weakening patches that a single-run check would typically accept?
+
+RQ4: What is the practical cost of this approach in terms of tokens, test executions, and time, and what is its run-to-run reliability?
+
+To answer these questions, we make the following contributions:
+
+We introduce PolluTrace, an open-source system composed of four specialized agents and a supervisor agent.
+
+We provide a shared evaluation harness that enforces the exact same fixed failing order for every evaluated system, concluding with a rigorous final check against the IDoFT ground truth using 100 randomized orders.
+
+We re-implement a NIODebugger-style pipeline adapted specifically for OD tests to serve as a robust baseline (B4).
+
+We conduct an extensive empirical study, featuring a reproduction study that successfully reproduces 90 of 135 IDoFT OD victims, accompanied by detailed ablation studies to isolate the impact of our system's components.
 \todo{introduction}
 
 % ===================================================================== 3
 \section{Related Work}
 \label{sec:related}
-% Owner: Zoya. Synthesis of the Phase 1 review, grouped by theme, NOT one paragraph per paper.
-% (a) Detecting and localizing OD tests: lam2019idflakies, gyori2015poldet, bell2015electrictest,
-%     zhang2014independence, li2022evolution, li2023systematic, rahman2025rankf, iqbal2025reruns,
-%     hashemi2025jsod, hashemi2026jstod, wang2022ipflakies, levin2025takuan.
-% (b) Repairing flaky tests: shi2019ifixflakies, li2022odrepair, chen2024flakydoctor,
-%     fatima2024flakyfix, li2025flakyguard, ke2025niodebugger, wei2022nio.
-% (c) Flakiness studies: luo2014empirical, parry2021survey, parry2025systemic, parry2026flimsiness,
-%     berndt2026llmflaky, berndt2026saphana.
-% (d) LLM agents for SE and their evaluation: yao2023react, shinn2023reflexion, bouzenia2025repairagent,
-%     xia2025agentless, jimenez2024swebench, yang2024sweagent, wang2026swebench.
-% End with how PolluTrace differs from the base paper (OD pairs, execution-confirmed
-% localization, state diff, strict validation).
+Detecting and Localizing OD Tests
+Identifying and localizing order-dependent (OD) tests has been heavily explored through a variety of execution and analysis strategies. Foundational tools like iDFlakies utilize random test reordering to classify OD versus non-OD tests [lam2019idflakies], while other approaches focus on systematic and evolution-aware test-order generation to expose order dependencies [li2022evolution, li2023systematic]. To pinpoint the exact cause of state pollution, tools such as PolDet monitor heap state changes [gyori2015poldet], and ElectricTest maps dependencies to safely accelerate test execution [bell2015electrictest]. This problem extends beyond Java; frameworks like JS-TOD successfully reorder tests in JavaScript [hashemi2026jstod], where studies show shared mocks and files are the primary culprits for OD failures [hashemi2025jsod], and similar detection efforts exist for Python [wang2022ipflakies]. Recent advancements emphasize reducing the overhead of test reruns [iqbal2025reruns]. For example, RankF ranks potential polluters before confirming them via execution, significantly cutting down localization time compared to traditional methods, though its LLM-based ranking variant (RankFL) struggled to accurately identify polluters [rahman2025rankf]. Similarly, Takuan leverages Daikon to compare passing and failing runs, extracting valid state invariants significantly faster than prior tools but stops short of generating a repair [levin2025takuan]. In contrast to these tools, our approach incorporates execution confirmation like RankF, but uniquely ranks polluters using a combination of shared static state and LLM analysis directly integrated within the repair loop.
+
+Repairing Flaky Tests
+Automated repair of flaky tests traditionally relied on heuristic and search-based methods. For instance, iFixFlakies searches for existing cleaner tests to inline their code into the victim [shi2019ifixflakies], whereas ODRepair synthesizes entirely new cleaners when none are available [li2022odrepair]. Preemptive strategies have also been explored for Non-Order-Dependent (NIO) flakiness before failures occur [wei2022nio]. Recently, Large Language Models (LLMs) have transformed test repair. Tools like FlakyDoctor utilize neuro-symbolic repair pipelines [chen2024flakydoctor], while FlakyFix first predicts the required fix category before applying LLM-based generation [fatima2024flakyfix]. In industry, FlakyGuard leverages dynamic call graph context to achieve high fix and merge rates, significantly outperforming prior academic tools [li2025flakyguard]. Our work builds directly upon NIODebugger, an agentic pipeline that detects, explores, and fixes NIO tests using an extensive retrieval and reflection loop [ke2025niodebugger]. However, NIODebugger explicitly filtered out OD tests from its pipeline. We differentiate our work by actively targeting OD pairs, allowing the system to dynamically locate the polluter, utilizing concrete state values as runtime evidence, and enforcing strict multi-order validation to ensure the fix is robust.
+
+Flakiness Studies and Validation
+The urgency of resolving test flakiness is underscored by extensive empirical studies detailing its systemic nature, underlying causes, and overall flimsiness across software ecosystems [parry2021survey, parry2025systemic, parry2026flimsiness]. Emerging research also highlights that LLM-generated tests are not immune to this issue; in fact, they frequently replicate flaky patterns, with a large majority copying injected flaky assertions during automated test generation [berndt2026llmflaky]. Industrial case studies, such as those analyzing issue reports in SAP HANA, further emphasize the pervasive disruption that flaky tests cause in real-world, large-scale systems [berndt2026saphana].
+
+LLM Agents for SE and Their Evaluation
+More broadly, our system aligns with the rapid evolution of LLM agents for software engineering tasks. Frameworks like ReAct and Reflexion have popularized the reason-act loop and verbal feedback mechanisms [yao2023react, shinn2023reflexion], which have been successfully adapted into tool-using repair agents equipped with finite state machines [bouzenia2025repairagent]. System architectures vary from the complex exploratory loops of SWE-agent [yang2024sweagent] to streamlined, fixed-pipeline approaches like Agentless, which has shown highly competitive performance on benchmarks [xia2025agentless]. However, evaluating these agents remains a significant challenge. Tools evaluated on standard datasets like SWE-bench [jimenez2024swebench] often produce plausible but ultimately incorrect patches, with approximately 11% of "solved" patches failing deeper inspection [wang2026swebench]. To combat this "plausible but wrong" problem, our methodology employs a rigorous, execution-based acceptance check across multiple test orders, ensuring the generated fixes are genuinely correct rather than superficially passing a single run.
 \todo{related work}
 
 % ===================================================================== 4
 \section{Problem Formulation}
 \label{sec:problem}
-% Owner: Zoya.
-% - Definitions: test suite T, order o, victim v, polluter p (v passes alone, fails after p in one JVM).
-% - Task input: failing order o_f = (t_1..t_k, v) and failure trace; NOT the polluter list.
-% - Output: a patch to a test class such that v passes in o_f, after every known polluter,
-%   in N randomized orders, without weakening assertions (integrity).
-% - Hypotheses H1-H3 (one per gap), stated so the experiments in Sec. VIII can confirm/reject them.
+To formalize the problem of order-dependent (OD) test repair, we define a test suite of a single module as $T = \{t_1, \dots, t_n\}$. An execution order $o = (t_{i1}, \dots, t_{ik})$ represents a sequence of tests run within one fresh Java Virtual Machine (JVM). The outcome of running a specific test $t$ within an order $o$ is denoted as $r(o, t) \in \{\text{PASS}, \text{FAIL}\}$.
+
+An order-dependent victim test $v$ is formally defined as a test that passes in isolation, $r((v), v) = \text{PASS}$, but fails when executed after a specific preceding test $p$, such that $\exists p \in T: r((p, v), v) = \text{FAIL}$. In this scenario, $p$ is designated as the polluter. For evaluation purposes, we define $P^*(v)$ as the set of all known polluters for a given victim $v$, based on the IDoFT ground truth dataset.
+
+The input provided to every automated repair system evaluated in our study is a failing order $o_f = (t_1, \dots, t_k, v)$ where $r(o_f, v) = \text{FAIL}$, along with its corresponding stack trace and the project's source code. Crucially, the systems do not receive the ground truth polluter set $P^*(v)$. For our specific evaluation harness, we fix the failing order per victim such that $k = 31$, consisting of 30 randomly selected module tests and one known polluter placed at a random position before the victim. The expected output of the system is a source code patch $\Delta$ applied to one test class (either the victim's or the polluter's class).
+
+A generated patch $\Delta$ is considered strictly correct (i.e., fixed) if and only if it satisfies four rigorous criteria. First, the patched code must compile successfully. Second, the victim must pass when run after every known polluter, meaning $r((p, v), v) = \text{PASS}$ for every $p \in P^*(v)$. Third, the patch must maintain structural integrity: it cannot reduce the number of assertions, introduce `@Ignore`, `@Disabled`, or `assume` statements, swallow assertion errors in try-catch blocks, remove the victim method entirely, or inject early returns. Fourth, the patch must pass a multi-order validation check, where $r(o_j, v) = \text{PASS}$ for $N_{\text{final}} = 100$ random test orders $o_j$ constructed from $\{v\} \cup P^*(v) \cup 20$ other module tests, capped at a 15-minute execution limit. A patch that satisfies the pairwise check against known polluters (criterion 2) but fails the multi-order validation (criterion 4) is classified as a **false fix**.
+
+Based on this formulation, our study investigates three hypotheses that mirror our primary research questions:
+
+* **H1 (Localization):** Execution-confirmed, statically ranked localization will identify a real polluter with fewer test executions than one-by-one or delta debugging, resulting in a higher overall fix rate.
+* **H2 (State Evidence):** Providing the LLM with a reflective state diff of the polluter's runtime effect will yield a higher fix rate and require fewer repair iterations.
+* **H3 (Multi-Order Validation):** Enforcing strict multi-order validation during the acceptance phase will result in a lower false-fix rate and successfully reject test-weakening patches that a single-run check would otherwise accept.
 \todo{problem formulation}
 
 % ===================================================================== 5
