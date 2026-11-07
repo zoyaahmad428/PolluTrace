@@ -1,0 +1,128 @@
+{
+  "system": "B1",
+  "config": {
+    "name": "full",
+    "localizer": "ranked",
+    "llm_rank": true,
+    "statediff": true,
+    "validator": "strict",
+    "n_loop": 20,
+    "loop_secs": 300,
+    "relocalize": true,
+    "max_iters": 4,
+    "max_llm_calls": 8,
+    "max_local_runs": 30,
+    "victim_secs": 1800,
+    "temperature": 0.2
+  },
+  "run": 1,
+  "victim": "org.apache.struts2.portlet.dispatcher.Jsr286DispatcherTest#testRender_ok",
+  "id": "V049",
+  "project": "https://github.com/Apache/Struts",
+  "sha": "13d9053050c9e4fb2ef049db6a37d3f6eebf48fa",
+  "module": "plugins/portlet",
+  "failing_order": [
+    "org.apache.struts2.portlet.interceptor.PortletStateInterceptorTest#testCopyValueStackFromEventToRenderPhase",
+    "org.apache.struts2.portlet.PortletSessionMapTest#testGet",
+    "org.apache.struts2.portlet.PortletRequestMapTest#testClear",
+    "org.apache.struts2.portlet.result.PortletResultTest#testTitleAndContentType",
+    "org.apache.struts2.portlet.PortletRequestMapTest#testGet",
+    "org.apache.struts2.portlet.interceptor.PortletAwareInterceptorTest#testPortletRequestIsSet",
+    "org.apache.struts2.portlet.PortletSessionMapTest#testEntrySet",
+    "org.apache.struts2.portlet.interceptor.PortletStateInterceptorTest#testRestoreValueStackInRenderPhaseWhenNotProperPrg",
+    "org.apache.struts2.portlet.context.PortletActionContextTest#testGetActionRequestAndResponseInRenderPhase",
+    "org.apache.struts2.portlet.PortletSessionMapTest#testRemove",
+    "org.apache.struts2.portlet.interceptor.PortletStateInterceptorTest#testDoNotRestoreValueStackInRenderPhaseWhenProperPrg",
+    "org.apache.struts2.portlet.PortletApplicationMapTest#testClear",
+    "org.apache.struts2.portlet.result.PortletResultTest#testDoExecute_event_locationIsAction",
+    "org.apache.struts2.views.jsp.PortletUrlTagTest#testResourceUrlWithTwoNestedParam",
+    "org.apache.struts2.portlet.result.PortletResultTest#testDoExecute_render",
+    "org.apache.struts2.portlet.PortletRequestMapTest#testPut",
+    "org.apache.struts2.portlet.dispatcher.Jsr286DispatcherTest#testModeChangeUsingPortletWidgets",
+    "org.apache.struts2.views.jsp.PortletUrlTagTest#testWhenPortletModeDiffersFromCurrentAndNoParametersAreSetRenderTheDefaults",
+    "org.apache.struts2.portlet.context.PortletActionContextTest#testGetPortletConfig",
+    "org.apache.struts2.portlet.util.PortletUrlHelperTest#testCreateRenderUrlWithDifferentWindowState",
+    "org.apache.struts2.views.jsp.PortletUrlTagTest#testUrlWithNoActionOrMethod",
+    "org.apache.struts2.portlet.PortletApplicationMapTest#testPut",
+    "org.apache.struts2.portlet.util.PortletUrlHelperTest#testCreateRenderUrlWithDifferentPortletMode",
+    "org.apache.struts2.portlet.dispatcher.Jsr286DispatcherTest#testProcessAction_ok",
+    "org.apache.struts2.portlet.context.PortletActionContextTest#testGetPhase",
+    "org.apache.struts2.portlet.result.PortletResultTest#testDoExecute_event_locationIsJsp",
+    "org.apache.struts2.views.jsp.PortletUrlTagTest#testEnsureParamsAreStringArrays",
+    "org.apache.struts2.views.jsp.PortletUrlTagTest#testUrlWithMethod",
+    "org.apache.struts2.portlet.context.PortletActionContextTest#testGetDefaultActionForMode",
+    "org.apache.struts2.portlet.PortletRequestMapTest#testEntrySet",
+    "org.apache.struts2.portlet.dispatcher.Jsr168DispatcherTest#testModeChangeUsingPortletWidgets",
+    "org.apache.struts2.portlet.dispatcher.Jsr286DispatcherTest#testRender_ok"
+  ],
+  "llm": {
+    "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+    "model": "gemini-3.5-flash-lite"
+  },
+  "result": {
+    "id": "V049",
+    "project": "Struts",
+    "victim": "org.apache.struts2.portlet.dispatcher.Jsr286DispatcherTest#testRender_ok",
+    "system": "B1",
+    "config": "full",
+    "run": 1,
+    "temperature": 0.2,
+    "seed": 2492589341,
+    "llm_calls": 1,
+    "prompt_tokens": 4718,
+    "completion_tokens": 3381,
+    "llm_secs": 6.2,
+    "test_runs": 0,
+    "test_executions": 0,
+    "test_secs": 0.0,
+    "agent_secs": 6.3,
+    "model": "gemini-3.5-flash-lite",
+    "iterations": 1,
+    "polluter_found": "",
+    "loc_runs": "",
+    "polluter_correct": "",
+    "target": "victim",
+    "stop_reason": "single call",
+    "detail": "",
+    "compiled": true,
+    "fix": false,
+    "all_known_polluters": false,
+    "integrity": "ok",
+    "outcome": "not_fixed",
+    "final_secs": 16.7
+  },
+  "system_output": {
+    "iterations": 1,
+    "target": "victim",
+    "stop_reason": "single call"
+  },
+  "final_patch": {
+    "C:\\Users\\zarpa\\Documents\\pollutrace-work\\work-p2\\projects\\Apache__Struts__13d90530\\plugins\\portlet\\src\\test\\java\\org\\apache\\struts2\\portlet\\dispatcher\\Jsr286DispatcherTest.java": "/*\n * Licensed to the Apache Software Foundation (ASF) under one\n * or more contributor license agreements.  See the NOTICE file\n * distributed with this work for additional information\n * regarding copyright ownership.  The ASF licenses this file\n * to you under the Apache License, Version 2.0 (the\n * \"License\"); you may not use this file except in compliance\n * with the License.  You may obtain a copy of the License at\n *\n *  http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing,\n * software distributed under the License is distributed on an\n * \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY\n * KIND, either express or implied.  See the License for the\n * specific language governing permissions and limitations\n * under the License.\n */\npackage org.apache.struts2.portlet.dispatcher;\n\nimport com.opensymphony.xwork2.Action;\nimport com.opensymphony.xwork2.ActionInvocation;\nimport com.opensymphony.xwork2.ActionProxy;\nimport com.opensymphony.xwork2.ActionProxyFactory;\nimport com.opensymphony.xwork2.util.ValueStack;\nimport org.apache.struts2.StrutsConstants;\nimport org.apache.struts2.dispatcher.mapper.ActionMapping;\nimport static org.apache.struts2.portlet.PortletConstants.*;\nimport org.easymock.EasyMock;\nimport org.jmock.Mock;\nimport org.jmock.cglib.MockObjectTestCase;\nimport org.jmock.core.Constraint;\nimport org.springframework.mock.web.portlet.MockPortletConfig;\nimport org.springframework.mock.web.portlet.MockPortletContext;\n\nimport javax.portlet.*;\nimport java.util.*;\n\n/**\n * Test portlet actions for porlet 2.0 specification.\n * \n */\npublic class Jsr286DispatcherTest extends MockObjectTestCase {\n\n\tJsr286Dispatcher dispatcher = null;\n\tMock mockConfig = null;\n\tMock mockCtx = null;\n\tMock mockRequest = null;\n\tMock mockSession = null;\n\tMock mockActionFactory = null;\n\tMock mockActionProxy = null;\n\tMock mockAction = null;\n\tMock mockInvocation = null;\n\n\n\n\tpublic void testRender_ok() {\n\t\tfinal Mock mockResponse = mock(RenderResponse.class);\n\t\tmockResponse.stubs().method(ANYTHING);\n\n\t\tPortletMode mode = PortletMode.VIEW;\n\n\t\tMap<String, String[]> requestParams = new HashMap<String, String[]>();\n\t\trequestParams.put(ACTION_PARAM, new String[] { \"/view/testAction\" });\n\t\trequestParams.put(EVENT_ACTION, new String[] { \"true\" });\n\t\trequestParams.put(MODE_PARAM, new String[] { mode.toString() });\n\n\t\tMap<String, Object> sessionMap = new HashMap<String, Object>();\n\n\t\tMap<String, String> initParams = new HashMap<String, String>();\n\t\tinitParams.put(\"viewNamespace\", \"/view\");\n\t\tinitParams.put(StrutsConstants.STRUTS_ALWAYS_SELECT_FULL_NAMESPACE,\n\t\t\t\t\"true\");\n\n\t\tinitPortletConfig(initParams, new HashMap<String, Object>());\n\t\tinitRequest(requestParams, new HashMap<String, Object>(), sessionMap,\n\t\t\t\tPortletMode.VIEW, WindowState.NORMAL, false, null);\n\t\tsetupActionFactory(\"/view\", \"testAction\", \"success\",\n\t\t\t\tEasyMock.createNiceMock(ValueStack.class));\n\n\t\tmockInvocation.expects(once()).method(\"getStack\")\n\t\t\t\t.will(returnValue(null));\n\t\ttry {\n\t\t\tdispatcher\n\t\t\t\t\t.setActionProxyFactory((ActionProxyFactory) mockActionFactory\n\t\t\t\t\t\t\t.proxy());\n\t\t\tdispatcher.init((PortletConfig) mockConfig.proxy());\n\t\t\tdispatcher.render((RenderRequest) mockRequest.proxy(),\n\t\t\t\t\t(RenderResponse) mockResponse.proxy());\n\t\t} catch (Exception e) {\n\t\t\te.printStackTrace();\n\t\t\tfail(\"Error occured\");\n\t\t}\n\t}\n\n\tpublic void testProcessAction_ok() {\n\t\tfinal Mock mockResponse = mock(ActionResponse.class);\n\n\t\tPortletMode mode = PortletMode.VIEW;\n\t\tMap<String, String> initParams = new HashMap<String, String>();\n\t\tinitParams.put(\"viewNamespace\", \"/view\");\n\n\t\tMap<String, String[]> requestParams = new HashMap<String, String[]>();\n\t\trequestParams.put(ACTION_PARAM, new String[] { \"/view/testAction\" });\n\t\trequestParams.put(MODE_PARAM, new String[] { mode.toString() });\n\n\t\tinitParams.put(StrutsConstants.STRUTS_ALWAYS_SELECT_FULL_NAMESPACE,\n\t\t\t\t\"true\");\n\t\tinitPortletConfig(initParams, new HashMap<String, Object>());\n\t\tinitRequest(requestParams, new HashMap<String, Object>(),\n\t\t\t\tnew HashMap<String, Object>(), PortletMode.VIEW,\n\t\t\t\tWindowState.NORMAL, true, null);\n\t\tsetupActionFactory(\"/view\", \"testAction\", \"success\",\n\t\t\t\tEasyMock.createNiceMock(ValueStack.class));\n\n\t\ttry {\n\t\t\tdispatcher\n\t\t\t\t\t.setActionProxyFactory((ActionProxyFactory) mockActionFactory\n\t\t\t\t\t\t\t.proxy());\n\t\t\tdispatcher.init((PortletConfig) mockConfig.proxy());\n\t\t\tdispatcher.processAction((ActionRequest) mockRequest.proxy(),\n\t\t\t\t\t(ActionResponse) mockResponse.proxy());\n\t\t} catch (Exception e) {\n\t\t\te.printStackTrace();\n\t\t\tfail(\"Error occured\");\n\t\t}\n\t}\n\n\tpublic void testModeChangeUsingPortletWidgets() {\n\t\tfinal Mock mockResponse = mock(RenderResponse.class);\n\t\tmockResponse.stubs().method(ANYTHING);\n\t\tPortletMode mode = PortletMode.EDIT;\n\n\t\tMap<String, String[]> requestParams = new HashMap<String, String[]>();\n\t\trequestParams.put(ACTION_PARAM, new String[] { \"/view/testAction\" });\n\t\trequestParams.put(EVENT_ACTION, new String[] { \"false\" });\n\t\trequestParams.put(MODE_PARAM,\n\t\t\t\tnew String[] { PortletMode.VIEW.toString() });\n\n\t\tMap<String, Object> sessionMap = new HashMap<String, Object>();\n\n\t\tMap<String, String> initParams = new HashMap<String, String>();\n\t\tinitParams.put(\"viewNamespace\", \"/view\");\n\t\tinitParams.put(\"editNamespace\", \"/edit\");\n\n\t\tinitPortletConfig(initParams, new HashMap<String, Object>());\n\t\tinitRequest(requestParams, new HashMap<String, Object>(), sessionMap,\n\t\t\t\tmode, WindowState.NORMAL, false, null);\n\t\tsetupActionFactory(\"/edit\", \"default\", \"success\",\n\t\t\t\tEasyMock.createNiceMock(ValueStack.class));\n\n\t\tmockInvocation.expects(once()).method(\"getStack\")\n\t\t\t\t.will(returnValue(null));\n\n\t\ttry {\n\t\t\tdispatcher\n\t\t\t\t\t.setActionProxyFactory((ActionProxyFactory) mockActionFactory\n\t\t\t\t\t\t\t.proxy());\n\t\t\tdispatcher.init((PortletConfig) mockConfig.proxy());\n\t\t\tdispatcher.render((RenderRequest) mockRequest.proxy(),\n\t\t\t\t\t(RenderResponse) mockResponse.proxy());\n\t\t} catch (Exception e) {\n\t\t\te.printStackTrace();\n\t\t\tfail(\"Error occured\");\n\t\t}\n\t}\n\t\n\tpublic void testParseConfigWithBang() {\n\t\t\n\t\tMockPortletContext portletContext = new MockPortletContext();\n\t\tMockPortletConfig portletConfig = new MockPortletConfig(portletContext);\n\n\t\tportletConfig.addInitParameter(\"viewNamespace\", \"/view\");\n\t\tportletConfig.addInitParameter(\"defaultViewAction\", \"index!input\");\n\n\t\tMap<PortletMode, ActionMapping> actionMap = new HashMap<PortletMode, ActionMapping>();\n\n\t\tdispatcher.parseModeConfig(actionMap, portletConfig, PortletMode.VIEW,\n\t\t\t\t\"viewNamespace\", \"defaultViewAction\");\n\n\t\tActionMapping mapping = actionMap.get(PortletMode.VIEW);\n\t\tassertEquals(\"index\", mapping.getName());\n\t\tassertEquals(\"/view\", mapping.getNamespace());\n\t\tassertEquals(\"input\", mapping.getMethod());\n\t}\n\n\tpublic void setUp() {\n\t\tdispatcher = new Jsr286Dispatcher();\n\t\tmockActionFactory = null;\n\t}\n\n\tprivate void initPortletConfig(final Map<String, String> initParams,\n\t\t\tfinal Map<String, Object> attributes) {\n\t\tmockConfig = mock(PortletConfig.class);\n\t\tmockCtx = mock(PortletContext.class);\n\t\tmockConfig.stubs().method(ANYTHING);\n\t\tmockCtx.stubs().method(ANYTHING);\n\t\tsetupStub(initParams, mockConfig, \"getInitParameter\");\n\t\tmockCtx.stubs()\n\t\t\t\t.method(\"getAttributeNames\")\n\t\t\t\t.will(returnValue(Collections.enumeration(attributes.keySet())));\n\t\tsetupStub(attributes, mockCtx, \"getAttribute\");\n\t\tmockConfig.stubs().method(\"getPortletContext\")\n\t\t\t\t.will(returnValue(mockCtx.proxy()));\n\t\tmockCtx.stubs()\n\t\t\t\t.method(\"getInitParameterNames\")\n\t\t\t\t.will(returnValue(Collections.enumeration(initParams.keySet())));\n\t\tsetupStub(initParams, mockCtx, \"getInitParameter\");\n\t\tmockConfig\n\t\t\t\t.stubs()\n\t\t\t\t.method(\"getInitParameterNames\")\n\t\t\t\t.will(returnValue(Collections.enumeration(initParams.keySet())));\n\t\tsetupStub(initParams, mockConfig, \"getInitParameter\");\n\t\tmockConfig.stubs().method(\"getResourceBundle\")\n\t\t\t\t.will(returnValue(new ListResourceBundle() {\n\t\t\t\t\tprotected Object[][] getContents() {\n\t\t\t\t\t\treturn new String[][] { { \"javax.portlet.title\",\n\t\t\t\t\t\t\t\t\"MyTitle\" } };\n\t\t\t\t\t}\n\t\t\t\t}));\n\t}\n\n\tprivate void setupActionFactory(String namespace, String actionName,\n\t\t\tString result, ValueStack stack) {\n\t\tif (mockActionFactory == null) {\n\t\t\tmockActionFactory = mock(ActionProxyFactory.class);\n\t\t}\n\t\tmockAction = mock(Action.class);\n\t\tmockActionProxy = mock(ActionProxy.class);\n\t\tmockInvocation = mock(ActionInvocation.class);\n\n\t\tmockActionFactory\n\t\t\t\t.expects(once())\n\t\t\t\t.method(\"createActionProxy\")\n\t\t\t\t.with(new Constraint[] { eq(namespace), eq(actionName), NULL,\n\t\t\t\t\t\tisA(Map.class) })\n\t\t\t\t.will(returnValue(mockActionProxy.proxy()));\n\t\tmockActionProxy.stubs().method(\"getAction\")\n\t\t\t\t.will(returnValue(mockAction.proxy()));\n\t\tmockActionProxy.expects(once()).method(\"execute\")\n\t\t\t\t.will(returnValue(result));\n\t\tmockActionProxy.expects(once()).method(\"getInvocation\")\n\t\t\t\t.will(returnValue(mockInvocation.proxy()));\n\t\tmockInvocation.stubs().method(\"getStack\").will(returnValue(stack));\n\n\t}\n\n\t/**\n\t * Initialize the mock request (and as a result, the mock session)\n\t * \n\t * @param requestParams\n\t *            The request parameters\n\t * @param requestAttributes\n\t *            The request attributes\n\t * @param sessionParams\n\t *            The session attributes\n\t * @param mode\n\t *            The portlet mode\n\t * @param state\n\t *            The portlet window state\n\t * @param isEvent\n\t *            <code>true</code> when the request is an ActionRequest.\n\t * @param locale\n\t *            The locale. If <code>null</code>, the request will return\n\t *            <code>Locale.getDefault()</code>\n\t */\n\tprivate void initRequest(Map<String, String[]> requestParams,\n\t\t\tMap<String, Object> requestAttributes,\n\t\t\tMap<String, Object> sessionParams, PortletMode mode,\n\t\t\tWindowState state, boolean isEvent, Locale locale) {\n\t\tmockRequest = isEvent ? mock(ActionRequest.class)\n\t\t\t\t: mock(RenderRequest.class);\n\t\tmockSession = mock(PortletSession.class);\n\t\tmockSession.stubs().method(ANYTHING);\n\t\tmockRequest.stubs().method(ANYTHING);\n\t\tsetupStub(sessionParams, mockSession, \"getAttribute\");\n\t\tmockSession\n\t\t\t\t.stubs()\n\t\t\t\t.method(\"getAttributeNames\")\n\t\t\t\t.will(returnValue(Collections.enumeration(sessionParams\n\t\t\t\t\t\t.keySet())));\n\t\tsetupParamStub(requestParams, mockRequest, \"getParameter\");\n\t\tsetupStub(requestAttributes, mockRequest, \"getAttribute\");\n\t\tmockRequest\n\t\t\t\t.stubs()\n\t\t\t\t.method(\"getAttributeNames\")\n\t\t\t\t.will(returnValue(Collections.enumeration(requestAttributes\n\t\t\t\t\t\t.keySet())));\n\t\tmockRequest.stubs().method(\"getParameterMap\")\n\t\t\t\t.will(returnValue(requestParams));\n\t\tmockRequest\n\t\t\t\t.stubs()\n\t\t\t\t.method(\"getParameterNames\")\n\t\t\t\t.will(returnValue(Collections.enumeration(requestParams\n\t\t\t\t\t\t.keySet())));\n\t\tmockRequest.stubs().method(\"getPortletSession\")\n\t\t\t\t.will(returnValue(mockSession.proxy()));\n\t\tif (locale != null) {\n\t\t\tmockRequest.stubs().method(\"getLocale\").will(returnValue(locale));\n\t\t} else {\n\t\t\tmockRequest.stubs().method(\"getLocale\")\n\t\t\t\t\t.will(returnValue(Locale.getDefault()));\n\t\t}\n\t\tmockRequest.stubs().method(\"getPortletMode\").will(returnValue(mode));\n\t\tmockRequest.stubs().method(\"getWindowState\").will(returnValue(state));\n\t}\n\n\tprivate void setupParamStub(Map<String, String[]> requestParams,\n\t\t\tMock mockRequest, String method) {\n\t\tMap<String, String> newMap = new HashMap<String, String>();\n\t\tfor (String key : requestParams.keySet()) {\n\t\t\tString[] val = requestParams.get(key);\n\t\t\tnewMap.put(key, val[0]);\n\t\t}\n\t\tsetupStub(newMap, mockRequest, method);\n\n\t}\n\n\t/**\n\t * Set up stubs for the mock.\n\t * \n\t * @param map\n\t *            The map containing the <code>key</code> and\n\t *            <code>values</code>. The key is the expected parameter to\n\t *            <code>method</code>, and value is the value that should be\n\t *            returned from the stub.\n\t * @param mock\n\t *            The mock to initialize.\n\t * @param method\n\t *            The name of the method to stub.\n\t */\n\tprivate void setupStub(Map map, Mock mock, String method) {\n\t\tfor (Object key : map.keySet()) {\n\t\t\tObject val = map.get(key);\n\t\t\tmock.stubs().method(method).with(eq(key)).will(returnValue(val));\n\t\t}\n\t}\n\n}\n"
+  },
+  "final_evaluation": {
+    "diff": "diff --git a/plugins/portlet/src/test/java/org/apache/struts2/portlet/dispatcher/Jsr286DispatcherTest.java b/plugins/portlet/src/test/java/org/apache/struts2/portlet/dispatcher/Jsr286DispatcherTest.java\nindex 6d8ff4b..fadda54 100644\n--- a/plugins/portlet/src/test/java/org/apache/struts2/portlet/dispatcher/Jsr286DispatcherTest.java\n+++ b/plugins/portlet/src/test/java/org/apache/struts2/portlet/dispatcher/Jsr286DispatcherTest.java\n@@ -186,6 +186,7 @@ public class Jsr286DispatcherTest extends MockObjectTestCase {\n \r\n \tpublic void setUp() {\r\n \t\tdispatcher = new Jsr286Dispatcher();\r\n+\t\tmockActionFactory = null;\r\n \t}\r\n \r\n \tprivate void initPortletConfig(final Map<String, String> initParams,\r\n",
+    "known_polluters": [
+      [
+        "org.apache.struts2.portlet.dispatcher.Jsr168DispatcherTest#testModeChangeUsingPortletWidgets",
+        "FAIL"
+      ],
+      [
+        "org.apache.struts2.portlet.dispatcher.Jsr168DispatcherTest#testRender_ok",
+        "PASS"
+      ]
+    ]
+  },
+  "usage": {
+    "llm_calls": 1,
+    "prompt_tokens": 4718,
+    "completion_tokens": 3381,
+    "llm_secs": 6.2,
+    "test_runs": 0,
+    "test_executions": 0,
+    "test_secs": 0.0,
+    "compiles": 0,
+    "wall_secs": 6.3,
+    "steps": 1
+  },
+  "trajectory": "logs\\trajectories\\E1\\B1\\run1\\V049.jsonl"
+}

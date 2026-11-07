@@ -117,13 +117,18 @@ stopped. Outputs: `results/<E>/<system>/run<k>.csv`, dossiers next to them, traj
 
 ### Gap-resolution table
 
-Filled from `results/phase2_tables.md` after the runs (`eval/stats.py` writes it).
+From `results/phase2_tables.md` (`eval/stats.py`). Phase 2 run: 1 run per system on the free Gemini
+tier (`gemini-3.5-flash-lite`, recorded in every result row), 15-victim test subset, of which 12
+were attempted (V116, V122, V129 in WildFly `naming` do not fail in the constructed order, for any system).
 
-| Gap | Component | Experiment | Metric |
-|---|---|---|---|
-| G1: polluter search is blind / expensive | Localizer | E4-G1, E5 A1 | executions until a known polluter is found; fix rate without it |
-| G2: repair lacks the actual polluted state | State diff | E4-G2, E5 A2 | fix rate and iterations with vs without the diff |
-| G3: "passes once" accepts false fixes | Validator | E4-G3, E5 A3 | seeded bad patches rejected; false-fix rate with vs without |
+| Gap | Component | Base paper (B4) | PolluTrace | Evidence | Addressed? |
+|---|---|---|---|---|---|
+| G1: polluter search is blind / expensive | Localizer | no localization step | known polluter found in 2.1 order runs on average (one-by-one 20.0, bisection 9.2); fix rate 58.3% with vs 50.0% without | E4-G1, E5 A1 | Partially |
+| G2: repair lacks the actual polluted state | State diff | repair from source only | diff shows a changed field for 12/15 victims; fix rate 58.3% with vs 58.3% without | E4-G2, E5 A2 | Not |
+| G3: "passes once" accepts false fixes | Validator | accepts after the failing order passes | seeded bad patches rejected 47/47 (weak 30/47); false-fix rate 0.0% vs 12.5% with the weak validator | E4-G3, E5 A3 | Fully |
+
+Overall fix rate: PolluTrace 7/12 (58.3%), B4 7/12, B1 4/12. PolluTrace costs more per victim
+(3.3 LLM calls and 304 test executions vs 1.8 and 94 for B4); see E6.
 
 ## Layout
 

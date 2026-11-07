@@ -1,0 +1,2 @@
+{"i": 0, "t": 0.0, "agent": "validator", "kind": "plan", "mode": "strict", "polluters": ["org.springframework.ws.soap.security.wss4j2.callback.SpringSecurityPasswordValidationCallbackHandlerTest#testHandleUsernameTokenPrincipal"], "n_loop": 20}
+{"i": 1, "t": 0.0, "agent": "validator", "kind": "decision", "verdict": "REJECT", "reasons": ["integrity"]}

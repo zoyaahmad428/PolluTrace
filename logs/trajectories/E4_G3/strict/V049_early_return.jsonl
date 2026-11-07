@@ -1,0 +1,2 @@
+{"i": 0, "t": 0.0, "agent": "validator", "kind": "plan", "mode": "strict", "polluters": ["org.apache.struts2.portlet.dispatcher.Jsr168DispatcherTest#testModeChangeUsingPortletWidgets"], "n_loop": 20}
+{"i": 1, "t": 0.0, "agent": "validator", "kind": "decision", "verdict": "REJECT", "reasons": ["integrity"]}
