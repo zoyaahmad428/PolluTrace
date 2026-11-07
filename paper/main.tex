@@ -168,11 +168,31 @@ Based on this formulation, our study investigates three hypotheses that mirror o
 % Organized by gap. Zoya: G1 and G3 subsections. Zarpash: G2 subsection.
 \subsection{Overall comparison}
 \input{tables/main.tex}
-\todo{discussion of Table~\ref{tab:main}}
+Table 1 presents the overall performance comparison of the evaluated systems. PolluTrace and the B4 baseline (our re-implementation of the base paper's pipeline) both achieved a fix rate of 58.3%, successfully repairing 7 out of 12 victims with 100% precision and a 0% false-fix rate. In contrast, the B1 single-call baseline managed to fix only 4 victims (33.3%), yielding a precision of 33.3%.
+A paired sign test between PolluTrace and B4 indicates identical performance at the victim level, resulting in 0 wins, 0 losses, and 12 ties (
+p=1.0). When compared to B1, PolluTrace successfully repaired 3 additional victims (3 wins, 0 losses, 9 ties); however, due to the limited sample size, this improvement does not reach statistical significance (
+p=0.25).
 
+An analysis of the failures reveals the limitations of a single-shot approach. B1 failed to repair 8 victims due to two compilation errors, one patch that violated structural integrity (V069), and five patches that failed to resolve the order dependency. While four victims (V054, V109, V111, and V113) were successfully fixed by all evaluated systems, victims V083, V084, and V087 from the marine-api project were only resolved by PolluTrace and B4. The failure of B1 on these specific victims underscores the necessity of iterative execution feedback for more complex state pollution. Conversely, three victims from the http-request project (V062, V064, and V069) remained completely unfixed across all systems, indicating difficult pollution mechanisms that current iterative and context-aware methods cannot yet overcome.
 \subsection{G1: Polluter localization}
 \input{tables/g1.tex}
-\todo{G1 results (Zoya)}
+### G1 — Localizer
+
+We evaluated the efficacy of the proposed localizer across the same 12 failing test orders, applying a uniform budget of 40 test executions for all search strategies (Table \ref{tab:g1}).
+
+**Search Efficiency and Execution Cost**
+The ranked localization strategies significantly reduced the search space. The static ranking approach and the LLM-augmented ranking required a mean of only 1.8 and 2.1 order runs, respectively. This corresponds to an average of just 4 and 5 total test executions. In stark contrast, traditional search methods were vastly more expensive: bisection (delta debugging) required an average of 9.2 order runs (60 test executions), random search required 11.4 order runs (23 test executions), and a naive one-by-one search required 20.0 order runs (40 test executions). Regarding overall success within the budget, the bisection strategy was the only method to find a known IDoFT polluter in all 12 cases, while the other four strategies successfully located a polluter in 11 out of 12 cases.
+
+**Impact of LLM Re-ranking**
+Analyzing the ranking quality reveals that incorporating the LLM re-ranking step improved immediate accuracy, placing the true polluter in the top-1 position for 8 of the 12 cases, compared to just 5 out of 12 for the static-only approach. However, when expanding to the top-5 candidates, the LLM re-ranking captured the polluter in 11 out of 12 cases, falling slightly short of the static method's perfect 12/12. Consequently, while LLM re-ranking improves top-1 hit rates, it does not substantially reduce the overall run count, as the static method alone is already highly efficient. Ultimately, both ranking methods represent a substantial operational improvement, requiring approximately $10\times$ fewer test executions than a one-by-one search and $4\times$ fewer than bisection.
+
+**Ablation A1 (No Localizer)**
+The downstream impact of the localizer on the final repair was evaluated through Ablation A1, which removes the localization phase entirely. Removing the localizer caused the overall fix rate to drop slightly from 7/12 (full PolluTrace) to 6/12. At the individual victim level, A1 performed better on two victims and worse on one. Specifically, A1 failed to repair victims V083 and V087 (from the `marine-api` project). The valid repairs for these victims required modifying the polluter class directly (`SentenceFactory.parsers`)—an intervention that is fundamentally impossible if the system cannot first localize and target the specific polluter. Conversely, A1 succeeded on victim V043 (from `Struts`), a test that the full PolluTrace pipeline failed to repair (detailed further in our failure analysis).
+
+**Threats to Validity and Conclusion**
+A notable threat to validity in our localization evaluation (metric E4-G1) is that the definition of "finding a polluter" counts any preceding test that successfully reproduces the victim's failure. For example, during the evaluation of victim V049, the localizer confirmed a polluter that successfully broke the victim, but this specific polluter was not listed in the IDoFT ground truth dataset (`polluter_correct = False`).
+
+Based on these findings, we conclude that Gap 1 (G1) is only partially addressed. While the proposed execution-confirmed, ranked localization is demonstrably cheaper than traditional methods and critically enables polluter-targeted repairs, it does not yield a strict overall fix-rate gain over the robust B4 baseline.
 
 \subsection{G2: State evidence for repair}
 \input{tables/g2.tex}
@@ -180,12 +200,17 @@ Based on this formulation, our study investigates three hypotheses that mirror o
 
 \subsection{G3: Validation}
 \input{tables/g3.tex}
-\todo{G3 results (Zoya)}
+To assess the robustness of our acceptance criteria (Gap 3), we evaluated the validator against a set of intentionally seeded "bad patches"—mutants designed to deceptively pass a single test run by circumventing the underlying issue rather than fixing it.
 
+Rejecting Deceptive Patches
+We evaluated 47 compiled mutants applicable to our test suite across four cheating strategies. The results, detailed in Table \ref{tab:g3_mutants}, contrast our strict multi-stage validation against a "weak" validator ablation. This weak validator mirrors baseline approaches (like B4), requiring only that the victim passes a single execution within its original failing order.
+
+While the weak validator successfully caught blatant cheating like @Ignore annotations (rejecting 12/12), it struggled significantly with more subtle evasions. It rejected only 64% of the deceptive patches overall, allowing 5 assertion removals, 5 swallowed exceptions, and 7 early returns to pass as "fixes." In contrast, PolluTrace's strict validator correctly rejected 100% of the 47 deceptive mutants, demonstrating the critical necessity of structural integrity checks.Impact on False Fixes
+The impact of this rigorous validation was confirmed during real automated repair runs. We conducted Ablation A3, running the full pipeline but utilizing only the weak validator. A3 reported 7 successful fixes out of 12 victims; however, it generated 1 false fix. For victim V049 (from Struts), the generated patch allowed the victim to pass the original failing order. Yet, during our final evaluation harness, this patch failed 89 out of 100 randomized test orders. PolluTrace's strict validator caught this failure immediately during the first random order check ($N=1$). Consequently, the strict validator achieved 100% precision (0 false fixes), compared to A3's 87.5%.Execution Cost
+This reliability comes with a computational trade-off. Enforcing strict validation substantially increases the test execution overhead, requiring an average of 304 test executions per victim, compared to just 51 executions for the weak validator (A3).
 \subsection{Gap-resolution summary}
 \input{tables/gap.tex}
-% Fill the "Addressed?" column ourselves (Fully/Partially/Not) from the evidence.
-
+In summary, regarding our identified gaps: G1 is partially addressed, G2 is not addressed, and G3 is fully addressed.
 % ===================================================================== 9
 \section{Ablation and Comparative Analysis}
 \label{sec:ablation}
@@ -197,11 +222,22 @@ Based on this formulation, our study investigates three hypotheses that mirror o
 % ===================================================================== 10
 \section{Failure Analysis}
 \label{sec:failures}
-% Owner: Zoya. Categories and counts (tables/failures.tex from results/failure_analysis.md),
-% likely cause + future fix per major category, 2 success + 2 failure trajectories
-% (condensed in results/failure_analysis.md).
 \input{tables/failures.tex}
-\todo{failure analysis}
+To better understand the limitations and strengths of PolluTrace, we conducted a detailed failure analysis on the system's trajectories (Table \ref{tab:fail}). Out of the 12 evaluated victims, PolluTrace failed to fix 5. These failures fall into four distinct categories: one victim remained failing after all attempts, one failed due to targeting the wrong polluter, two were rejected by the validator for structural integrity violations, and one failed due to persistent compilation errors.
+
+Success Cases and System Strengths
+Analyzing the successful repairs highlights the critical roles of the iterative feedback loop and the localization agent. For victim V113 (aismessages), the localizer accurately identified the polluter canFlushEmpty at rank 1 in a single execution run. The state differencing tool then isolated three modified static mock fields. The initial repair attempt, which simply changed a @BeforeClass annotation to @Before, still failed and was consequently rejected by the validator. Provided with this negative execution feedback, the LLM generated a second attempt that converted the fields to non-static and ensured a fresh mock context per test. This patch seamlessly passed the failing order, pairwise checks, isolated execution, and the 20 random-order sweep. The entire process required only 3 LLM calls and 48 seconds, demonstrating that the validator-driven feedback loop performs tangible, corrective work.
+
+Similarly, for victim V054 (elastic-job), PolluTrace resolved the issue in just 2 LLM calls on the first attempt, guided directly by the state diff pointing to a polluted JobRegistry.instance singleton. Furthermore, the repairs for victims V083 and V087 (marine-api) were applied directly to the polluter class itself. This intervention is strictly impossible in baseline systems that do not perform localization, underscoring the necessity of our G1 localization phase.
+
+Failure Cases and Limitations
+Patch Generation and Context Limits: Victims V062, V064, and V069 from http-request were never fixed by any evaluated system. PolluTrace successfully localized the correct polluter (customConnectionFactory), generated the correct state diff (HttpRequest.CONNECTION_FACTORY), and the LLM even formulated the correct repair strategy ("reset CONNECTION_FACTORY before each test"). The failure occurred entirely during patch generation. Because the test class contains approximately 2,000 lines of code and the system relies on whole-file replacements, the LLM was forced to output 13,000 to 16,000 tokens per call. This resulted in compilation errors (attempts 1 and 3), an integrity rejection due to truncated assertions (attempt 2), and a completely empty code block (attempt 4), exhausting the iteration budget. Future implementations must pivot to diff-based patch generation (e.g., instructing the LLM to write a distinct @Before method to inject) or utilize models with significantly larger and more reliable output contexts.
+
+Missing State Evidence: For victim V043 (Struts), the repair remained failing because the state diff returned empty. The underlying pollution was likely stored in a thread-local ActionContext, which our reflection snapshot does not capture. Operating blindly, the LLM made four unsuccessful attempts to reset mock fields. Notably, attempt 3 altered the test's expected assertion values—a deceptive patch that successfully passed the failing order but failed when run in isolation, prompting a correct rejection by the strict validator. Interestingly, Ablation A1 (which bypasses the localizer) successfully fixed this victim, indicating that no single architectural configuration strictly dominates across all edge cases. Future work should expand the state snapshot to capture thread-locals and common framework contexts.
+
+Polluter Misidentification: Victim V049 (Struts) failed because the localizer confirmed a preceding test that successfully broke the victim but was not the true ground-truth polluter identified by IDoFT. The system exhausted its four repair attempts based on this misidentified target. As noted in Section G3, the weak validator (Ablation A3) accepted a false fix for this victim, which subsequently failed 89 out of 100 random orders, highlighting the danger of repairing against the wrong polluter without strict multi-order validation.
+
+Reproduction Failures (Construct Threat): Finally, victims V116, V122, and V129 (WildFly) were not attempted by the repair loop. While the state diff correctly indicated that the user.timezone system property was altered by the polluter, the victim unexpectedly passed within our constructed failing order (consisting of the polluter placed among 30 random tests in a single JVM). Because our specific evaluation harness failed to reliably reproduce the failure, the repair loop was never triggered. This represents a construct-validity threat regarding how failing test sequences are synthesized and executed for evaluation.
 
 % ===================================================================== 11
 \section{Limitations and Threats to Validity}
