@@ -168,7 +168,8 @@ def run_one(system, cfg, row, run, experiment, n_final, final_secs):
     csv_path, dos_dir, traj_dir = out_paths(experiment, system, run)
     proj = Project(row["project_url"], row["sha"], row["module"])
     base = {"id": row["id"], "project": proj.root.name.split("__")[1], "victim": row["victim"], "system": system,
-            "config": cfg.name, "run": run, "temperature": cfg.temperature, "seed": stable_seed(row["id"], run)}
+            "config": cfg.name, "run": run,
+            "temperature": cfg.temperature if llm.sends_temperature() else "default(1.0)", "seed": stable_seed(row["id"], run)}
     if not proj.build():
         return {**base, "outcome": "build_failed"}, {}
     if proj.diff().strip():  # an interrupted run left a patch behind

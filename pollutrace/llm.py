@@ -3,7 +3,8 @@
 Defaults to Google Gemini through its OpenAI-compatible endpoint. Any other compatible
 provider (OpenAI, Groq, a local Ollama server) works by setting:
 
-  POLLUTRACE_LLM_BASE_URL   e.g. https://api.openai.com/v1  or  http://localhost:11434/v1
+  POLLUTRACE_LLM_BASE_URL   e.g. https://api.anthropic.com/v1  (Claude; model default claude-sonnet-5-5)
+                            https://api.openai.com/v1  or  http://localhost:11434/v1
   POLLUTRACE_LLM_MODEL      e.g. gpt-4o-mini, qwen2.5-coder:7b
   POLLUTRACE_LLM_API_KEY    (or GEMINI_API_KEY, or a key file at <work>/secrets/llm_key.txt)
 """
@@ -16,18 +17,30 @@ import urllib.request
 
 from . import env
 
-BASE = os.environ.get("POLLUTRACE_LLM_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai")
-MODEL = os.environ.get("POLLUTRACE_LLM_MODEL", "")  # empty: discover the newest available "flash" model
-
 
 def _key():
-    for k in ("POLLUTRACE_LLM_API_KEY", "GEMINI_API_KEY", "OPENAI_API_KEY"):
+    for k in ("POLLUTRACE_LLM_API_KEY", "ANTHROPIC_API_KEY", "GEMINI_API_KEY", "OPENAI_API_KEY"):
         if os.environ.get(k):
             return os.environ[k].strip()
     f = env.WORK / "secrets" / "llm_key.txt"
     if f.exists():
         return f.read_text(encoding="utf-8").strip()
     return ""
+
+
+BASE = os.environ.get("POLLUTRACE_LLM_BASE_URL") or (
+    "https://api.anthropic.com/v1" if _key().startswith("sk-ant-")  # a Claude API key selects Claude
+    else "https://generativelanguage.googleapis.com/v1beta/openai")
+MODEL = os.environ.get("POLLUTRACE_LLM_MODEL", "")  # empty: discover the newest available "flash" model
+ANTHROPIC = "anthropic.com" in BASE
+if ANTHROPIC and not MODEL:
+    MODEL = "claude-sonnet-5-5"  # Claude's OpenAI-compatible endpoint has no model list to discover from
+
+
+def sends_temperature():
+    """Claude 4.7 and later reject temperatures below 1 on the OpenAI-compatible endpoint, so the
+    parameter is omitted there and the provider default (1.0) applies; it is recorded as such."""
+    return not ANTHROPIC
 
 
 def _discover():
@@ -68,7 +81,7 @@ def model():
 
 
 def info():
-    return {"base_url": BASE, "model": model()}
+    return {"base_url": BASE, "model": model(), "temperature": "sent" if sends_temperature() else "provider default (1.0)"}
 
 
 def chat(messages, temperature=0.0, max_tokens=16000, retries=3):
@@ -91,8 +104,10 @@ def chat(messages, temperature=0.0, max_tokens=16000, retries=3):
 
 
 def _chat_one(mname, messages, temperature, max_tokens, retries):
-    body = json.dumps({"model": mname, "messages": messages, "temperature": temperature,
-                       "max_tokens": max_tokens}).encode("utf-8")
+    req_body = {"model": mname, "messages": messages, "max_tokens": max_tokens}
+    if sends_temperature():
+        req_body["temperature"] = temperature
+    body = json.dumps(req_body).encode("utf-8")
     headers = {"Content-Type": "application/json", "User-Agent": "pollutrace"}
     key = _key()
     if key:
