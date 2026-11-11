@@ -62,7 +62,7 @@ const stripLegend = (len, pos) => `<div class="strip-legend">
   <span><span class="key victim"></span>victim, runs last and fails</span>
 </div>`;
 
-function table(cols, rows, opts = {}) {
+function table(cols, rows) {
   const head = cols.map((c) => `<th class="${c.num ? "num" : ""}">${esc(c.label)}</th>`).join("");
   const body = rows.map((r) => {
     const attrs = r._attrs || "";
@@ -70,7 +70,6 @@ function table(cols, rows, opts = {}) {
     return `<tr class="${r._cls || ""}" ${attrs}>${tds}</tr>`;
   }).join("");
   return `<div class="table-scroll panel"><table>
-    ${opts.caption ? `<caption>${opts.caption}</caption>` : ""}
     <thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
 }
 

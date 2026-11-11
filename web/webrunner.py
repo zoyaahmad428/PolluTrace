@@ -49,7 +49,6 @@ def _pump(rid, proc):
         proc.stdout.close()
         code = proc.wait()
         with _lock:
-            rec["returncode"] = code
             rec["finished"] = time.time()
             if rec["state"] != "stopped":
                 rec["state"] = "finished" if code == 0 else "failed"
@@ -80,9 +79,8 @@ def start(victim_id, system, n_final=20, final_secs=300):
                             text=True, bufsize=1, encoding="utf-8", errors="replace")
     rec = {
         "id": rid, "victim_id": victim_id, "system": system, "run": run_no,
-        "state": "running", "started": time.time(), "finished": None, "returncode": None,
-        "cmd": " ".join(cmd[1:]), "output": deque(maxlen=400), "proc": proc,
-        "n_final": n_final, "final_secs": final_secs,
+        "state": "running", "started": time.time(), "finished": None,
+        "output": deque(maxlen=400), "proc": proc,
     }
     with _lock:
         _runs[rid] = rec
@@ -102,27 +100,25 @@ def systems():
     return out
 
 
-def public(rec, after=0):
+def public(rec):
     """The run as the console sees it: status, console output, and the live trajectory."""
-    traj = webapi.trajectory(webapi.WEB_EXPERIMENT, rec["system"], rec["run"], rec["victim_id"],
-                             after=after, limit=200) or {"steps": [], "total": 0, "after": after}
+    traj = (webapi.trajectory(webapi.WEB_EXPERIMENT, rec["system"], rec["run"], rec["victim_id"])
+            or {"steps": [], "total": 0})
     result = None
     if rec["state"] in ("finished", "failed", "stopped"):
         rows = webapi._read_csv(env.RESULTS / webapi.WEB_EXPERIMENT / rec["system"] / f"run{rec['run']}.csv")
         result = next((r for r in rows if r["id"] == rec["victim_id"]), None)
     return {
         "id": rec["id"], "victim_id": rec["victim_id"], "system": rec["system"], "run": rec["run"],
-        "state": rec["state"], "started": rec["started"], "finished": rec["finished"],
-        "returncode": rec["returncode"], "cmd": rec["cmd"],
+        "state": rec["state"],
         "elapsed": round((rec["finished"] or time.time()) - rec["started"], 1),
         "output": list(rec["output"]), "trajectory": traj, "result": result,
-        "n_final": rec["n_final"],
     }
 
 
-def get(rid, after=0):
+def get(rid):
     rec = _runs.get(rid)
-    return public(rec, after) if rec else None
+    return public(rec) if rec else None
 
 
 def listing():

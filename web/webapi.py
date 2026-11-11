@@ -101,11 +101,8 @@ def health():
     if not has_key:
         blockers.append(f"No LLM key. Put one in {key_file} or set POLLUTRACE_LLM_API_KEY.")
     return {
-        "repo": str(REPO), "work": str(work), "work_exists": work.exists(),
-        "jdks": jdks, "order_runner": runner, "llm_key": has_key,
-        "llm_base_url": os.environ.get("POLLUTRACE_LLM_BASE_URL", "") or "(default: Gemini)",
         "llm_model": os.environ.get("POLLUTRACE_LLM_MODEL", "") or "(auto: newest flash)",
-        "projects_ready": len(projects), "projects": projects[:40],
+        "projects_ready": len(projects),
         "results_present": bool(list((REPO / "results").glob("E*/*/run*.csv"))),
         "can_run": not blockers, "blockers": blockers,
     }
@@ -127,12 +124,10 @@ def overview():
         mets = [stats.run_metrics(rows) for rows in runs.values()]
         first = mets[0]
         systems.append({
-            **spec,
-            "runs": len(runs), "run_numbers": sorted(runs),
+            **spec, "runs": len(runs),
             "victims": first["n"], "fixed": first["fixed"],
             "fix_rate": first["fix_rate"], "precision": first["precision"],
-            "false_fix_rate": first["false_fix_rate"],
-            "submitted": first["submitted"], "outcomes": first["outcomes"],
+            "false_fix_rate": first["false_fix_rate"], "outcomes": first["outcomes"],
         })
     pv = {s["key"]: stats.per_victim(data[s["key"]]) for s in systems}
     base = "PolluTrace"
@@ -146,7 +141,7 @@ def overview():
     hero = _hero()
     full = next((s for s in systems if s["key"] == base), None)
     return {
-        "systems": systems, "paired": paired, "baseline": base, "hero": hero,
+        "systems": systems, "paired": paired, "hero": hero,
         "headline": {
             "fixed": full["fixed"] if full else 0,
             "victims": full["victims"] if full else 0,
@@ -240,7 +235,6 @@ def victims():
             "id": r["id"], "project": r["project"], "module": r.get("module", ""),
             "victim": short_test(r["victim"]),
             "confirmed_polluter": short_test(r.get("confirmed_polluter", "")),
-            "n_known_polluters": len(r["polluter_list"]),
             "order": orders[r["id"]],
             "outcomes": outcome.get(r["id"], {}),
             "attempted": r["id"] in outcome,
@@ -267,9 +261,7 @@ def victim_detail(vid):
         dos = _read_json(dpath, {}) or {}
         per_system.append({
             "key": spec["key"], "label": spec["label"], "experiment": spec["experiment"], "run": run,
-            "outcome": rec.get("outcome"), "row": rec,
-            "summary": _dossier_summary(dos),
-            "has_dossier": dpath.exists(),
+            "outcome": rec.get("outcome"), "summary": _dossier_summary(dos),
             "has_trajectory": (LOGS / spec["experiment"] / spec["key"] / f"run{run}" / f"{vid}.jsonl").exists(),
         })
     return {
@@ -307,25 +299,25 @@ def _dossier_summary(dos):
         attempts.append({
             "attempt": a.get("attempt"), "target": a.get("target"), "verdict": a.get("verdict"),
             "reason": a.get("reason"), "reasons": a.get("reasons") or [],
-            "checks": a.get("checks") or {}, "has_diff": bool(a.get("diff")),
+            "checks": a.get("checks") or {},
         })
+    usage = dos.get("usage") or {}
+    final = fe.get("random_orders") or {}
     return {
-        "polluter": out.get("polluter"), "target": out.get("target"),
-        "iterations": out.get("iterations"), "loc_runs": out.get("loc_runs"),
-        "stop_reason": out.get("stop_reason"),
+        "polluter": out.get("polluter"),
+        "iterations": out.get("iterations"), "stop_reason": out.get("stop_reason"),
         "localization": {"strategy": loc.get("strategy"), "runs": loc.get("runs"),
-                         "rank_of_found": loc.get("rank_of_found"),
-                         "ranked": [short_test(t) for t in (loc.get("ranked") or [])[:10]],
-                         "budget_hit": loc.get("budget_hit")},
-        "state_diff": {"polluters": list(sd), "n_changed": sum((d.get("n_changed") or 0) for d in sd.values()),
+                         "rank_of_found": loc.get("rank_of_found")},
+        "state_diff": {"n_changed": sum((d.get("n_changed") or 0) for d in sd.values()),
                        "n_fields": sum((d.get("n_fields") or 0) for d in sd.values()),
                        "changes": changes},
         "attempts": attempts,
         "patch_files": [{"name": Path(p.replace("\\", "/")).name, "path": p, "chars": len(src)}
                         for p, src in patches.items()],
-        "final_orders": fe.get("random_orders") or {},
-        "usage": dos.get("usage") or {},
-        "llm": dos.get("llm") or {},
+        "final_orders": {k: final.get(k) for k in ("n_run", "pool_size", "passes", "fails", "budget_hit")}
+                        if final else {},
+        "usage": {k: usage.get(k) for k in ("llm_calls", "prompt_tokens", "completion_tokens",
+                                            "test_runs", "test_executions", "wall_secs")},
     }
 
 
@@ -336,10 +328,6 @@ def patch_text(experiment, system, run, vid, index=0):
         return None
     path, src = patches[min(index, len(patches) - 1)]
     return {"path": path, "name": Path(path.replace("\\", "/")).name, "source": src}
-
-
-def dossier(experiment, system, run, vid):
-    return _read_json(env.RESULTS / experiment / system / "dossiers" / f"run{run}" / f"{vid}.json")
 
 
 # ---------------------------------------------------------------- trajectories
@@ -354,7 +342,7 @@ def trajectory_index():
             for e, systems in tree.items()}
 
 
-def trajectory(experiment, system, run, vid, after=0, limit=400):
+def trajectory(experiment, system, run, vid, limit=400):
     path = LOGS / experiment / system / f"run{run}" / f"{vid}.jsonl"
     if not path.exists():
         return None
@@ -368,10 +356,8 @@ def trajectory(experiment, system, run, vid, after=0, limit=400):
                 steps.append(json.loads(line))
             except ValueError:
                 continue
-    total = len(steps)
-    window = steps[after:after + limit]
     agents = sorted({s.get("agent", "?") for s in steps})
-    return {"steps": window, "total": total, "after": after, "agents": agents,
+    return {"steps": steps[:limit], "total": len(steps), "agents": agents,
             "elapsed": steps[-1].get("t") if steps else 0}
 
 
@@ -391,12 +377,9 @@ def g1_strategies():
         # eval/stats.py prints into results/phase2_tables.md.
         out.append({
             "strategy": strategy, "trials": len(rs),
-            "found": sum(1 for r in rs if r.get("found")),
             "correct": sum(1 for r in rs if str(r.get("correct")).lower() == "true"),
             "mean_runs": round(st.mean(runs), 1) if runs else 0,
-            "median_runs": round(st.median(runs)) if runs else 0,
             "mean_execs": round(st.mean(execs)) if execs else 0,
-            "mean_secs": round(st.mean([_f(r["secs"], 0) for r in rs]), 1) if rs else 0,
             "top1": sum(1 for x in ranked if x == 1), "top5": sum(1 for x in ranked if x <= 5),
             "has_ranking": bool(ranked),
         })
@@ -415,15 +398,10 @@ def g2_summary():
     fields = sorted(_f(r.get("n_fields"), 0) for r in ok)
     return {"total": len(rows), "ok": len(ok), "with_change": len(changed), "points_at_victim": len(points),
             "median_fields": fields[len(fields) // 2] if fields else 0,
-            "rows": [{"id": r["id"], "project": r["project"], "victim": short_test(r["victim"]),
-                      "polluter": short_test(r["polluter"]), "ok": str(r.get("ok")).lower() == "true",
-                      "n_classes": _i(r.get("n_classes"), 0), "n_fields": _i(r.get("n_fields"), 0),
-                      "n_changed": _i(r.get("n_changed"), 0),
-                      "app_changes": _i(r.get("app_changes"), 0),
-                      "sysprop_changes": _i(r.get("sysprop_changes"), 0),
+            "rows": [{"id": r["id"], "victim": short_test(r["victim"]),
+                      "n_fields": _i(r.get("n_fields"), 0), "n_changed": _i(r.get("n_changed"), 0),
                       "points": str(r.get("points_at_victim_state")).lower() == "true",
-                      "top_changes": r.get("top_changes", ""), "secs": _f(r.get("secs"), 0),
-                      "error": r.get("error", "")} for r in rows]}
+                      "top_changes": r.get("top_changes", "")} for r in rows]}
 
 
 def g3_summary():
@@ -442,11 +420,7 @@ def g3_summary():
     for n in (1, 5, 10, 20, 50, 100):
         col = f"caught_N{n}"
         caught[n] = sum(1 for r in sweep if str(r.get(col)).lower() == "true")
-    return {"mutants": mutants, "sweep_total": len(sweep), "caught": caught,
-            "sweep_rows": [{"system": r["system"], "id": r["id"],
-                            "first_fail_index": _i(r.get("first_fail_index")),
-                            "fail_rate": _f(r.get("fail_rate"), 0), "n_run": _i(r.get("n_run"), 0)}
-                           for r in sweep]}
+    return {"mutants": mutants, "sweep_total": len(sweep), "caught": caught}
 
 
 def gaps():
@@ -458,12 +432,10 @@ def gaps():
 
 def _g1_rows():
     rows = _read_csv(env.RESULTS / "E4_G1" / "localization.csv")
-    return [{"id": r["id"], "project": r["project"], "strategy": r["strategy"],
+    return [{"id": r["id"], "strategy": r["strategy"],
              "correct": str(r.get("correct")).lower() == "true",
              "runs": _i(r.get("runs"), 0), "execs": _i(r.get("test_executions"), 0),
-             "rank": _i(r.get("rank_first_known")), "prefix_len": _i(r.get("prefix_len"), 0),
-             "polluter_position": _i(r.get("polluter_position")), "secs": _f(r.get("secs"), 0),
-             "victim": short_test(r["victim"]), "found": short_test(r.get("found", ""))}
+             "rank": _i(r.get("rank_first_known")), "secs": _f(r.get("secs"), 0)}
             for r in rows]
 
 

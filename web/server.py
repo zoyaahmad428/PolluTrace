@@ -107,8 +107,6 @@ class Handler(BaseHTTPRequestHandler):
     # ------------------------------------------------------------- API (GET)
     def api_get(self, seg, query):
         head = seg[0] if seg else ""
-        after = int((query.get("after") or ["0"])[0] or 0)
-
         if head == "health":
             return self.json(webapi.health())
         if head == "overview":
@@ -125,23 +123,20 @@ class Handler(BaseHTTPRequestHandler):
             return self.json(webapi.efficiency())
         if head == "trajectories":
             return self.json(webapi.trajectory_index())
-        if head in ("trajectory", "dossier", "patch"):
+        if head in ("trajectory", "patch"):
             if len(seg) != 5 or not safe(*seg[1:]):
                 return self.fail(400, "Expected /api/%s/<experiment>/<system>/<run>/<victim>." % head)
             exp, system, run, vid = seg[1:]
             if head == "trajectory":
-                t = webapi.trajectory(exp, system, run, vid, after=after)
+                t = webapi.trajectory(exp, system, run, vid)
                 return self.json(t) if t else self.fail(404, "No trajectory for that run.")
-            if head == "dossier":
-                d = webapi.dossier(exp, system, run, vid)
-                return self.json(d) if d else self.fail(404, "No dossier for that run.")
             p = webapi.patch_text(exp, system, run, vid, int((query.get("i") or ["0"])[0]))
             return self.json(p) if p else self.fail(404, "That run produced no patch.")
         if head == "runs":
             if len(seg) == 1:
                 return self.json({"runs": webrunner.listing(), "systems": webrunner.systems(),
                                   "health": webapi.health()})
-            r = webrunner.get(seg[1], after=after)
+            r = webrunner.get(seg[1])
             return self.json(r) if r else self.fail(404, "No such run.")
         return self.fail(404, "Not found")
 

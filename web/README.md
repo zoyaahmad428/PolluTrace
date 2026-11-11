@@ -66,8 +66,7 @@ All responses are JSON. `GET` unless marked.
 /api/gaps                                       G1, G2 and G3 measurements
 /api/efficiency                                 E6 table
 /api/trajectories                               what trajectories exist
-/api/trajectory/<exp>/<system>/<run>/<id>       the steps, with ?after= to page
-/api/dossier/<exp>/<system>/<run>/<id>          the raw dossier
+/api/trajectory/<exp>/<system>/<run>/<id>       every step of that run
 /api/patch/<exp>/<system>/<run>/<id>            the patched file
 /api/runs                                       runs this server started
 POST /api/runs            {victim_id, system, n_final}

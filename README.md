@@ -133,6 +133,9 @@ Overall fix rate: PolluTrace 7/12 (58.3%), B4 7/12, B1 4/12. PolluTrace costs mo
 ## Layout
 
 ```
+run_phase1.py             Phase 1 pipeline: splits, reproduction, baselines B1 and B2
+run_phase2.py             Phase 2 pipeline: setup, subset, tests, E1–E6, stats, failure analysis
+scripts/                  one-off steps: toolchain install, manifest, splits, subset, reproduction
 java/OrderRunner.java     runs pkg.Cls#method lists in one JVM (JUnit 3/4/5 via reflection); lists tests
 pollutrace/env.py         portable toolchains, paths, subprocess helper
 pollutrace/project.py     clone at SHA, build, pathing-jar classpath, run orders, patch/revert
@@ -149,9 +152,16 @@ tests/                    unit tests (fake project, no Java)
 docs/devlog.md            development log: failures, changes, effects
 baselines/                B1 single LLM call, B2 iFixFlakies (built from source)
 contracts/                JSON schemas: flakiness dossier, tool interfaces
+eval/stats.py             Phase 2 tables: metrics, paired tests, gap-resolution table
+eval/failure_analysis.py  success and failure cases from the dossiers
 eval/summarize.py         tables for the report
 web/                      browser console over the results, and a live run view (web/README.md)
+paper/                    the conference-style paper: main.tex, refs.bib, generated tables
 data/, results/           manifest, splits, raw CSVs, dossiers, summary
+logs/trajectories/        every agent step of every run, as JSON Lines
+smoke_results/            output of the Phase 2 smoke test, kept out of results/ so it never enters the statistics
+requirements.txt          development extras only; the system itself needs no third-party packages
+.env.example              the environment variables the LLM client reads
 ```
 
 ## Web console

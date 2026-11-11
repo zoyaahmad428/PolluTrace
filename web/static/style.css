@@ -108,7 +108,6 @@ main { max-width: 1180px; padding: 2.4rem 2.2rem 5rem; }
 .view > section { margin-bottom: 2.6rem; }
 .loading { color: var(--faint); }
 
-.lead { color: var(--muted); max-width: 64ch; }
 .section-head { margin-bottom: 1rem; }
 .section-head p { margin: .35rem 0 0; color: var(--muted); font-size: .92rem; }
 
@@ -166,8 +165,6 @@ tbody tr.highlight td { background: var(--accent-soft); }
 tr.clickable { cursor: pointer; }
 tr.clickable:hover td { background: var(--sunk); }
 
-caption { text-align: left; font-size: .8rem; color: var(--muted); padding: 0 .7rem .7rem; }
-
 /* measure bar inside a cell: a fixed track keeps rows comparable */
 .track { display: block; width: 86px; height: 4px; margin: .32rem 0 0 auto;
          background: var(--rule-soft); border-radius: 2px; }
@@ -190,7 +187,6 @@ caption { text-align: left; font-size: .8rem; color: var(--muted); padding: 0 .7
 .chip.false_fix   { background: var(--fail-soft); color: var(--fail); }
 .chip.compile_error, .chip.fix_but_integrity, .chip.partial_fix { background: var(--warn-soft); color: var(--warn); }
 .chip.not_fixed, .chip.no_patch, .chip.llm_error { background: var(--grey-soft); color: var(--grey); }
-.chip.accent { background: var(--accent-soft); color: var(--accent); }
 
 /* ---------------------------------------------------------- gap cards */
 .gap-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(255px, 1fr)); }
@@ -249,7 +245,6 @@ ul.checks .no .mark { color: var(--fail); }
 .who.repair     { color: var(--pass); }
 .who.validator  { color: var(--fail); }
 .steps .what b { font-weight: 600; }
-.steps .what .kind { color: var(--muted); font-size: .78rem; }
 .steps .what .det { color: var(--muted); font-size: .8rem; display: block; margin-top: .1rem; }
 .steps .what .det code { font-family: var(--mono); font-size: .76rem; }
 
