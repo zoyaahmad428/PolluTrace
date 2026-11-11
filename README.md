@@ -150,8 +150,20 @@ docs/devlog.md            development log: failures, changes, effects
 baselines/                B1 single LLM call, B2 iFixFlakies (built from source)
 contracts/                JSON schemas: flakiness dossier, tool interfaces
 eval/summarize.py         tables for the report
+web/                      browser console over the results, and a live run view (web/README.md)
 data/, results/           manifest, splits, raw CSVs, dossiers, summary
 ```
+
+## Web console
+
+```bash
+python web/server.py --open     # http://127.0.0.1:8000
+```
+
+Browse the results, drill from a fix rate down to the static field a polluter changed, replay
+any run's trajectory step by step, and start a new run on one victim. Standard library only,
+no build step. Its metrics come from `eval/stats.py`, so it always agrees with
+`results/phase2_tables.md`. Details in [`web/README.md`](web/README.md).
 
 ## Definitions used in results
 

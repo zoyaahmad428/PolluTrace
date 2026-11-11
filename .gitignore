@@ -1,6 +1,9 @@
 __pycache__/
 *.pyc
 /work/
+# runs started from the web console; the paper's results live in results/E*
+/results/WEB/
+/logs/trajectories/WEB/
 *.pt-bak
 .venv/
 .idea/

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PolluTrace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='3' fill='%232a3f9d'/><rect x='3' y='7' width='2' height='2' fill='white'/><rect x='6.5' y='7' width='2' height='2' fill='%23ff8a7a'/><rect x='10' y='7' width='3' height='2' fill='white' opacity='.5'/></svg>">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<nav class="rail" aria-label="Sections">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">PolluTrace</span>
+    <span class="brand-sub">order-dependent test repair</span>
+  </div>
+  <ul class="rail-list">
+    <li><a href="#/overview" data-view="overview">Overview</a></li>
+    <li><a href="#/victims" data-view="victims">Victims</a></li>
+    <li><a href="#/gaps" data-view="gaps">Gaps</a></li>
+    <li><a href="#/cost" data-view="cost">Cost</a></li>
+    <li><a href="#/traces" data-view="traces">Traces</a></li>
+    <li><a href="#/run" data-view="run">Run</a></li>
+  </ul>
+  <div class="rail-foot">
+    <span id="env-dot" class="dot" aria-hidden="true"></span>
+    <span id="env-text">checking this machine</span>
+  </div>
+</nav>
+
+<main id="main" tabindex="-1">
+  <div id="view" class="view"><p class="loading">Reading results…</p></div>
+</main>
+
+<div id="sheet" class="sheet" hidden>
+  <div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+    <header class="sheet-head">
+      <h2 id="sheet-title"></h2>
+      <button type="button" class="close" data-close>Close</button>
+    </header>
+    <div id="sheet-body" class="sheet-body"></div>
+  </div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>
